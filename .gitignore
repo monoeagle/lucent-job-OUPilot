@@ -1,0 +1,9 @@
+# Runtime-Logs & Konflikt-Reports
+Logs/*.log
+Logs/konflikte-*.csv
+
+# Laufzeit-Store (GUID-Mapping, dev/mock — wird von der App geschrieben)
+data/mapping.json
+
+# Headless-Testskripte (werden nach Nutzung gelöscht)
+samples/__*.ps1

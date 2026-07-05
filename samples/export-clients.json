@@ -1,0 +1,5 @@
+[
+  { "name": "PC-0001$", "objectSid": "S-1-5-21-111-2001", "objectClass": "computer", "dNSHostName": "pc-0001.contoso.local" },
+  { "name": "PC-0002$", "objectSid": "S-1-5-21-111-2002", "objectClass": "computer", "dNSHostName": "pc-0002.contoso.local" },
+  { "name": "PC-0003$", "objectSid": "S-1-5-21-111-2003", "objectClass": "computer", "dNSHostName": "pc-0003.contoso.local" }
+]

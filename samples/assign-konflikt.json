@@ -1,0 +1,4 @@
+[
+  { "computer": "PC-MOVED$", "groups": ["Berlin-Nord-Office-Policy", "Hamburg-Altona-Office-Policy", "Berlin-Nord-7Zip-Job"] },
+  { "computer": "PC-OK$",    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Sued-Firefox-Policy"] }
+]

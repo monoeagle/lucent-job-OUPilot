@@ -1,0 +1,32 @@
+[
+  {
+    "computer": "PC-1001$",
+    "standort": "Berlin-Nord",
+    "assignments": [
+      { "software": "Office", "type": "Policy" },
+      { "software": "7Zip",   "type": "Job" }
+    ]
+  },
+  {
+    "computer": "PC-1002$",
+    "standort": "Berlin",
+    "assignments": [
+      { "software": "Firefox", "type": "Policy" },
+      { "software": "MSTeams", "type": "Policy" }
+    ]
+  },
+  {
+    "computer": "PC-WRONG$",
+    "standort": "Hamburg-Altona",
+    "assignments": [
+      { "software": "Office", "type": "Policy" }
+    ]
+  },
+  {
+    "computer": "PC-1003$",
+    "standort": "Berlin-Nord",
+    "assignments": [
+      { "software": "Photoshop", "type": "Policy" }
+    ]
+  }
+]
