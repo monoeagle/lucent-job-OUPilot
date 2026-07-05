@@ -14,7 +14,11 @@ function Get-OupDefaultSettings {
         AdServer      = ''
         # Pfad zum GUID-Mapping-Store (leer = <AppRoot>\data\mapping.json).
         MappingPath   = ''
-        # UI
+        # UI — Theme-System (Muster wie CodeSigningCommander):
+        #   UiStyle   = Geometrie 'Sharp' (scharfe Ecken) | 'Soft' (3px, luftiger)
+        #   UiPalette = Farbschema (Gray, Slate, Blue, Ocean, Teal, Mint, Sage,
+        #               Forest, Amber, Coral, Rose, Purple)
+        UiStyle       = 'Sharp'
         UiPalette     = 'Gray'
         # Zuletzt genutztes Verzeichnis für JSON-Importe.
         LastImportDir = ''

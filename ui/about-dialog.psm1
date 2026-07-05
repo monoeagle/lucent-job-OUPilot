@@ -9,7 +9,9 @@ $script:OupAboutXaml = @'
         Title="Über OUPilot" Width="620" Height="560"
         MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
-        ShowInTaskbar="False" FontFamily="Segoe UI" FontSize="13">
+        ShowInTaskbar="False" FontFamily="Segoe UI" FontSize="13"
+        Background="{DynamicResource Theme.Background}"
+        TextElement.Foreground="{DynamicResource Theme.TextPrimary}">
   <DockPanel Margin="22,18,22,14">
 
     <!-- Schließen-Button unten -->
@@ -22,9 +24,9 @@ $script:OupAboutXaml = @'
       <TextBlock FontSize="40" Margin="0,0,14,0" VerticalAlignment="Center" Text="&#x1F4E6;"/>
       <StackPanel VerticalAlignment="Center">
         <TextBlock Text="OUPilot" FontSize="20" FontWeight="SemiBold"/>
-        <TextBlock x:Name="LblVersion" FontSize="13" Foreground="#777"/>
+        <TextBlock x:Name="LblVersion" FontSize="13" Foreground="{DynamicResource Theme.TextSecondary}"/>
         <TextBlock Text="AD-Software-Gruppen · MECM-Deployment · Rechner-Einsortierung"
-                   FontSize="12" Margin="0,2,0,0" Foreground="#777"/>
+                   FontSize="12" Margin="0,2,0,0" Foreground="{DynamicResource Theme.TextSecondary}"/>
       </StackPanel>
     </StackPanel>
 
@@ -33,32 +35,32 @@ $script:OupAboutXaml = @'
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,10,8,8">
           <StackPanel>
 
-            <TextBlock Text="System" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="#0078D4"/>
+            <TextBlock Text="System" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="{DynamicResource Theme.Accent}"/>
             <Grid Margin="0,0,0,14">
               <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
               <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-              <TextBlock Grid.Row="0" Grid.Column="0" Text="AD-Quelle:"  Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="AD-Quelle:"  Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="0" Grid.Column="1" x:Name="LblAdMode" Margin="0,2"/>
-              <TextBlock Grid.Row="1" Grid.Column="0" Text="PowerShell:" Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="PowerShell:" Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LblPwsh"   Margin="0,2"/>
-              <TextBlock Grid.Row="2" Grid.Column="0" Text="OS:"         Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="OS:"         Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="2" Grid.Column="1" x:Name="LblOs"     Margin="0,2" TextWrapping="Wrap"/>
             </Grid>
 
-            <TextBlock Text="Projekt" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="#0078D4"/>
+            <TextBlock Text="Projekt" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="{DynamicResource Theme.Accent}"/>
             <Grid Margin="0,0,0,14">
               <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
               <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-              <TextBlock Grid.Row="0" Grid.Column="0" Text="Entwickler:" Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Entwickler:" Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="0" Grid.Column="1" x:Name="LblDeveloper" Margin="0,2"/>
-              <TextBlock Grid.Row="1" Grid.Column="0" Text="E-Mail:"     Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="E-Mail:"     Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LblEmail"  Margin="0,2"/>
-              <TextBlock Grid.Row="2" Grid.Column="0" Text="App-Pfad:"   Margin="0,2" Foreground="#777"/>
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="App-Pfad:"   Margin="0,2" Foreground="{DynamicResource Theme.TextSecondary}"/>
               <TextBlock Grid.Row="2" Grid.Column="1" x:Name="LblAppPath" Margin="0,2" TextWrapping="Wrap"/>
             </Grid>
 
-            <TextBlock Text="Komponenten" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="#0078D4"/>
-            <TextBlock TextWrapping="Wrap" Foreground="#555" FontSize="12">
+            <TextBlock Text="Komponenten" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" Foreground="{DynamicResource Theme.Accent}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Theme.TextSecondary}" FontSize="12">
               · AD-Lesen: ActiveDirectory-Modul &#8594; ADSI &#8594; Mock (Fallback)<LineBreak/>
               · AD-Schreiben: Add-ADGroupMember &#8594; ADSI, mit WhatIf-Testlauf<LineBreak/>
               · Stabile Gruppen-Identität über objectGUID<LineBreak/>

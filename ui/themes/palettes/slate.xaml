@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Palette: Slate (Kontrast-Stufe 3 — dunkler + wärmer).
+    Background ist deutlich getönt — kein fast-weißes Grundraster mehr.
+    Nur Farb-Brushes. Geometrie kommt aus sharp.xaml / soft.xaml.
+  -->
+
+  <sys:String xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="Theme.PaletteMarker">Slate</sys:String>
+
+  <!-- Accent -->
+  <SolidColorBrush x:Key="Theme.Accent"        Color="#475569"/>
+  <SolidColorBrush x:Key="Theme.AccentLight"   Color="#B8C3D2"/>
+  <SolidColorBrush x:Key="Theme.AccentHover"   Color="#354251"/>
+
+  <!-- Border -->
+  <SolidColorBrush x:Key="Theme.Border"        Color="#6B7D93"/>
+  <SolidColorBrush x:Key="Theme.BorderStrong"  Color="#4B5D72"/>
+
+  <!-- Flächen -->
+  <SolidColorBrush x:Key="Theme.Background"    Color="#E0E8EF"/>
+  <SolidColorBrush x:Key="Theme.SoftBg"        Color="#C6D1DD"/>
+  <SolidColorBrush x:Key="Theme.HeaderBg"      Color="#A6B5C3"/>
+  <SolidColorBrush x:Key="Theme.GridLine"      Color="#9CADBF"/>
+
+  <!-- Text -->
+  <SolidColorBrush x:Key="Theme.TextPrimary"   Color="#131B24"/>
+  <SolidColorBrush x:Key="Theme.TextSecondary" Color="#2D3847"/>
+
+  <!-- Status (palette-unabhängig, semantisch) -->
+  <SolidColorBrush x:Key="Theme.StatusOk"      Color="#107C10"/>
+  <SolidColorBrush x:Key="Theme.StatusWarn"    Color="#CA5010"/>
+  <SolidColorBrush x:Key="Theme.StatusErr"     Color="#C50F1F"/>
+</ResourceDictionary>

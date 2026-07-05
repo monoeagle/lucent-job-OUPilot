@@ -141,6 +141,23 @@ ist als Erweiterung vorgesehen.)
 Menü **_Info** öffnet den Über-Dialog (Tabs *Info* mit System-/Projekt-/
 Komponenten-Angaben und *Changelog*).
 
+### Darstellung (Theme)
+
+Menü **_Ansicht** schaltet das Erscheinungsbild **live** um (Muster wie im
+*CodeSigningCommander*, `ui/theme-loader.psm1`):
+
+- **Farbschema** — 12 Paletten (`Gray`, `Slate`, `Blue`, `Ocean`, `Teal`, `Mint`,
+  `Sage`, `Forest`, `Amber`, `Coral`, `Rose`, `Purple`).
+- **Stil** — `Sharp` (scharfe Ecken, kompakt) oder `Soft` (3px-Ecken, luftiger).
+
+Das Theme besteht aus zwei ResourceDictionaries, die app-weit gemergt werden:
+`ui/themes/palettes/<farbe>.xaml` (nur Farb-Brushes) zuerst, dann
+`ui/themes/<stil>.xaml` (Geometrie + Control-Styles, die die Farben per
+`DynamicResource` ziehen). Die Wahl wird sofort in `settings.json` gespeichert
+(`UiStyle`, `UiPalette`) und beim nächsten Start übernommen. Farbwechsel greifen
+sofort; ein Stilwechsel (Geometrie) zieht vollständig erst beim nächsten Start
+durch.
+
 ## Persistenz
 
 Lokale JSON-Dateien:
@@ -165,6 +182,12 @@ core/
   import-engine.psm1    JSON-Exporte parsen & normalisieren
 ui/
   main-window.psm1      Hauptfenster: OU-TreeView + Import-Panel
+  about-dialog.psm1     Info-/Über-Dialog (Tabs Info + Changelog)
+  theme-loader.psm1     Theme-System: Palette + Stil mergen, live umschalten
+  themes/
+    sharp.xaml          Stil „Sharp" (scharfe Ecken) — Geometrie + Control-Styles
+    soft.xaml           Stil „Soft" (3px-Ecken) — Geometrie + Control-Styles
+    palettes/*.xaml     12 Farbschemata (nur Brushes)
 tools/
   Ensure-Utf8Bom.ps1    Quelldateien als UTF-8 mit BOM sichern + Parsecheck
 samples/                Beispiel-Exporte zum Ausprobieren
@@ -186,10 +209,10 @@ Der Entwicklungs-Client ist bewusst vom AD abgekoppelt. Deshalb:
 ## Stand & nächste Schritte
 
 Erledigt: Baum, Auswahl, JSON-Parsing, **echtes AD-Membership-Schreiben**
-(`Add-ADGroupMember` + ADSI-Fallback) mit WhatIf/Bestätigung, Store mit AD-Status.
+(`Add-ADGroupMember` + ADSI-Fallback) mit WhatIf/Bestätigung, Store mit AD-Status,
+**Theme-System** (12 Paletten + 2 Stile, live umschaltbar, Menü *Ansicht*).
 
 Noch offen / bewusst später:
-- Theme-System (Paletten) wie im CodeSigningCommander.
 - Suche/Filter im Baum, Entfernen einzelner Mitglieder (auch aus dem AD).
 - Konfigurierbare Feld-Map für exotische Export-Formate (Grundgerüst in
   `import-engine.psm1` vorhanden: `$script:OupFieldMap`).

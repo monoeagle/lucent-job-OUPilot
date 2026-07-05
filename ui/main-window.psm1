@@ -28,12 +28,16 @@ $script:oupLookupWin    = $null   # Rechner-Übersicht: Fenster
 $script:oupLookupItems  = $null   # Rechner-Übersicht: Grid-Items
 $script:oupLookupLocs   = $null   # Rechner-Übersicht: Standort-Map
 $script:oupImportMode   = 'Group' # 'Group' (Gruppe gewählt) | 'SubOU' (Unterstandort)
+$script:oupPaletteItems = $null   # Ansicht-Menü: Palette-Name -> MenuItem (Häkchen)
+$script:oupStyleItems   = $null   # Ansicht-Menü: Stil-Name    -> MenuItem (Häkchen)
 
 $script:OupMainXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="OUPilot" Height="720" Width="1180"
-        WindowStartupLocation="CenterScreen" FontFamily="Segoe UI" FontSize="13">
+        WindowStartupLocation="CenterScreen" FontFamily="Segoe UI" FontSize="13"
+        Background="{DynamicResource Theme.Background}"
+        TextElement.Foreground="{DynamicResource Theme.TextPrimary}">
   <DockPanel>
     <!-- Menüleiste -->
     <Menu DockPanel.Dock="Top">
@@ -43,20 +47,21 @@ $script:OupMainXaml = @'
         <MenuItem x:Name="MenuExit" Header="Beenden"/>
       </MenuItem>
       <MenuItem x:Name="MenuClientLookup" Header="_Rechner suchen..."/>
+      <MenuItem x:Name="MenuView" Header="_Ansicht"/>
       <MenuItem x:Name="MenuInfo" Header="_Info"/>
     </Menu>
 
     <!-- Toolbar -->
-    <Border DockPanel.Dock="Top" Background="#F3F3F3" Padding="8,6" BorderBrush="#DDD" BorderThickness="0,0,0,1">
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Theme.SoftBg}" Padding="8,6" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,0,0,1">
       <StackPanel Orientation="Horizontal">
         <Button x:Name="BtnReload" Content="AD neu einlesen" Padding="10,4" Margin="0,0,8,0"/>
-        <TextBlock x:Name="TxtMode" VerticalAlignment="Center" Foreground="#555"/>
+        <TextBlock x:Name="TxtMode" VerticalAlignment="Center" Foreground="{DynamicResource Theme.TextSecondary}"/>
       </StackPanel>
     </Border>
 
     <!-- Statusleiste -->
-    <Border DockPanel.Dock="Bottom" Background="#F3F3F3" Padding="8,4" BorderBrush="#DDD" BorderThickness="0,1,0,0">
-      <TextBlock x:Name="TxtStatus" Foreground="#444" Text="Bereit."/>
+    <Border DockPanel.Dock="Bottom" Background="{DynamicResource Theme.SoftBg}" Padding="8,4" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0">
+      <TextBlock x:Name="TxtStatus" Foreground="{DynamicResource Theme.TextSecondary}" Text="Bereit."/>
     </Border>
 
     <Grid>
@@ -69,18 +74,18 @@ $script:OupMainXaml = @'
       <!-- Links: OU-/Gruppen-Baum -->
       <DockPanel Grid.Column="0">
         <TextBlock DockPanel.Dock="Top" Text="OU-Struktur &amp; AD-Gruppen" FontWeight="SemiBold" Margin="8,8,8,4"/>
-        <TreeView x:Name="TreeAd" Margin="8,0,8,8"/>
+        <TreeView x:Name="TreeAd" Margin="8,0,8,8" Background="{DynamicResource Theme.Background}" BorderBrush="{DynamicResource Theme.Border}"/>
       </DockPanel>
 
-      <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#EEE"/>
+      <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="{DynamicResource Theme.SoftBg}"/>
 
       <!-- Rechts: ausgewählte Gruppe + Importe -->
       <DockPanel Grid.Column="2" Margin="8">
-        <Border DockPanel.Dock="Top" BorderBrush="#DDD" BorderThickness="1" Padding="10" Margin="0,0,0,8" CornerRadius="3">
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" Padding="10" Margin="0,0,0,8" CornerRadius="3">
           <StackPanel>
             <TextBlock x:Name="TxtGroupName" Text="Keine Gruppe gewählt" FontWeight="SemiBold" FontSize="15"/>
-            <TextBlock x:Name="TxtGroupGuid" Foreground="#777" Margin="0,2,0,0"/>
-            <TextBlock x:Name="TxtGroupDn"   Foreground="#777" TextWrapping="Wrap"/>
+            <TextBlock x:Name="TxtGroupGuid" Foreground="{DynamicResource Theme.TextSecondary}" Margin="0,2,0,0"/>
+            <TextBlock x:Name="TxtGroupDn"   Foreground="{DynamicResource Theme.TextSecondary}" TextWrapping="Wrap"/>
           </StackPanel>
         </Border>
 
@@ -738,7 +743,9 @@ $script:OupLookupXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Rechner-Übersicht" Width="740" Height="520"
-        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="13">
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI" FontSize="13"
+        Background="{DynamicResource Theme.Background}"
+        TextElement.Foreground="{DynamicResource Theme.TextPrimary}">
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
       <TextBlock Text="Rechner:" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -749,7 +756,7 @@ $script:OupLookupXaml = @'
             BorderThickness="1" Padding="8,5" Margin="0,0,0,8" Visibility="Collapsed">
       <TextBlock x:Name="WarnText" TextWrapping="Wrap" Foreground="#7A5C00"/>
     </Border>
-    <TextBlock x:Name="LblSummary" DockPanel.Dock="Top" Margin="0,0,0,6" Foreground="#444"
+    <TextBlock x:Name="LblSummary" DockPanel.Dock="Top" Margin="0,0,0,6" Foreground="{DynamicResource Theme.TextSecondary}"
                Text="Rechnernamen eingeben und Suchen."/>
     <DataGrid x:Name="GridGroups" AutoGenerateColumns="False" IsReadOnly="True"
               CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
@@ -810,6 +817,79 @@ function _Oup-OnClientLookup {
     [void]$script:oupLookupWin.ShowDialog()
 }
 
+function _Oup-SetTheme {
+    <#  .SYNOPSIS  Wechselt Stil/Palette live (Switch-Theme), persistiert die Wahl
+                   in settings.json und aktualisiert die Menü-Häkchen.  #>
+    param([string]$Style, [string]$Palette)
+    try {
+        [void](Switch-Theme -Style $Style -Palette $Palette)
+    } catch {
+        _Oup-SetStatus "Theme-Wechsel fehlgeschlagen: $($_.Exception.Message)" 'WARN'
+        return
+    }
+    if ($Style)   { $script:oupSettings.UiStyle   = $Style }
+    if ($Palette) { $script:oupSettings.UiPalette = $Palette }
+    Export-OupSettings -Settings $script:oupSettings -ConfigPath $script:oupConfigPath
+    _Oup-RefreshViewMenuChecks
+    _Oup-SetStatus "Ansicht: Stil $($script:oupSettings.UiStyle), Palette $($script:oupSettings.UiPalette)."
+}
+
+function _Oup-RefreshViewMenuChecks {
+    <#  .SYNOPSIS  Setzt die Häkchen im Ansicht-Menü auf die aktive Wahl.  #>
+    if ($script:oupPaletteItems) {
+        foreach ($k in @($script:oupPaletteItems.Keys)) {
+            $script:oupPaletteItems[$k].IsChecked = ($k -ieq $script:oupSettings.UiPalette)
+        }
+    }
+    if ($script:oupStyleItems) {
+        foreach ($k in @($script:oupStyleItems.Keys)) {
+            $script:oupStyleItems[$k].IsChecked = ($k -ieq $script:oupSettings.UiStyle)
+        }
+    }
+}
+
+function _Oup-BuildViewMenu {
+    <#  .SYNOPSIS  Baut das Ansicht-Menü: Untermenüs 'Farbschema' (Paletten) und
+                   'Stil' (Sharp/Soft), je Eintrag abhakbar + Live-Umschaltung.  #>
+    $menu = $script:oupWindow.FindName('MenuView')
+    if (-not $menu) { return }
+    $menu.Items.Clear()
+    $script:oupPaletteItems = @{}
+    $script:oupStyleItems   = @{}
+
+    # Farbschema (Palette)
+    $palRoot = New-Object System.Windows.Controls.MenuItem
+    $palRoot.Header = 'Farbschema'
+    foreach ($p in (Get-AvailablePalettes)) {
+        $mi = New-Object System.Windows.Controls.MenuItem
+        $mi.Header      = $p
+        $mi.IsCheckable = $true
+        $mi.IsChecked   = ($p -ieq $script:oupSettings.UiPalette)
+        $mi.Tag         = $p
+        # Kein GetNewClosure: Handler bleibt an den Modulkontext gebunden, damit
+        # _Oup-SetTheme und $script:-State auflösbar sind. Wert kommt aus $s.Tag.
+        $mi.Add_Click({ param($s, $e) _Oup-SetTheme -Palette ([string]$s.Tag) })
+        [void]$palRoot.Items.Add($mi)
+        $script:oupPaletteItems[$p] = $mi
+    }
+    [void]$menu.Items.Add($palRoot)
+
+    # Stil (Geometrie)
+    $styleRoot = New-Object System.Windows.Controls.MenuItem
+    $styleRoot.Header = 'Stil'
+    foreach ($st in (Get-AvailableStyles)) {
+        $mi = New-Object System.Windows.Controls.MenuItem
+        $mi.Header      = $st
+        $mi.IsCheckable = $true
+        $mi.IsChecked   = ($st -ieq $script:oupSettings.UiStyle)
+        $mi.Tag         = $st
+        $mi.Add_Click({ param($s, $e) _Oup-SetTheme -Style ([string]$s.Tag) })
+        [void]$styleRoot.Items.Add($mi)
+        $script:oupStyleItems[$st] = $mi
+    }
+    [void]$menu.Items.Add($styleRoot)
+}
+
 function Show-OupMainWindow {
     <#
         .SYNOPSIS  Baut das Hauptfenster, lädt AD + Store und zeigt es modal an.
@@ -827,6 +907,16 @@ function Show-OupMainWindow {
     $script:oupSettings    = Import-OupSettings -ConfigPath $ConfigPath
     $script:oupMappingPath = Get-OupMappingPath -ConfiguredPath $script:oupSettings.MappingPath -AppRoot $AppRoot
     $script:oupStore       = Import-OupMapping -Path $script:oupMappingPath
+
+    # Theme (Palette + Stil) laden — MUSS vor XamlReader.Load stehen, damit die
+    # DynamicResource-Referenzen im Fenster aufgelöst werden. Legt bei Bedarf ein
+    # Application-Objekt an und merged die ResourceDictionaries app-weit.
+    try {
+        [void](Initialize-Theme -Style $script:oupSettings.UiStyle `
+                                -Palette $script:oupSettings.UiPalette -ScriptRoot $AppRoot)
+    } catch {
+        Write-OupLog "Theme konnte nicht geladen werden: $($_.Exception.Message)" 'WARN'
+    }
 
     # Fenster aus XAML.
     $reader = New-Object System.Xml.XmlNodeReader ([xml]$script:OupMainXaml)
@@ -855,9 +945,12 @@ function Show-OupMainWindow {
     $script:oupWindow.FindName('MenuClientLookup').Add_Click({ _Oup-OnClientLookup })
     $script:oupWindow.FindName('MenuInfo').Add_Click({
         if (Get-Command Show-OupAboutDialog -ErrorAction SilentlyContinue) {
-            Show-OupAboutDialog -Version '1.0.0' -Settings $script:oupSettings -Owner $script:oupWindow
+            Show-OupAboutDialog -Version '1.1.0' -Settings $script:oupSettings -Owner $script:oupWindow
         }
     })
+
+    # Ansicht-Menü (Farbschema/Stil) dynamisch aus dem Theme-Loader aufbauen.
+    _Oup-BuildViewMenu
 
     # Erstbefüllung.
     _Oup-LoadTree

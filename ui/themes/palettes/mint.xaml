@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Palette: Mint (Kontrast-Stufe 3 — dunkler + wärmer).
+    Background ist deutlich getönt — kein fast-weißes Grundraster mehr.
+    Nur Farb-Brushes. Geometrie kommt aus sharp.xaml / soft.xaml.
+  -->
+
+  <sys:String xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="Theme.PaletteMarker">Mint</sys:String>
+
+  <!-- Accent -->
+  <SolidColorBrush x:Key="Theme.Accent"        Color="#0B8F5B"/>
+  <SolidColorBrush x:Key="Theme.AccentLight"   Color="#B0DCC0"/>
+  <SolidColorBrush x:Key="Theme.AccentHover"   Color="#086F46"/>
+
+  <!-- Border -->
+  <SolidColorBrush x:Key="Theme.Border"        Color="#6DA181"/>
+  <SolidColorBrush x:Key="Theme.BorderStrong"  Color="#4C815E"/>
+
+  <!-- Flächen -->
+  <SolidColorBrush x:Key="Theme.Background"    Color="#E6F1E7"/>
+  <SolidColorBrush x:Key="Theme.SoftBg"        Color="#CEE0CF"/>
+  <SolidColorBrush x:Key="Theme.HeaderBg"      Color="#AFCAB2"/>
+  <SolidColorBrush x:Key="Theme.GridLine"      Color="#A5C2AA"/>
+
+  <!-- Text -->
+  <SolidColorBrush x:Key="Theme.TextPrimary"   Color="#0A271A"/>
+  <SolidColorBrush x:Key="Theme.TextSecondary" Color="#284036"/>
+
+  <!-- Status (palette-unabhängig, semantisch) -->
+  <SolidColorBrush x:Key="Theme.StatusOk"      Color="#107C10"/>
+  <SolidColorBrush x:Key="Theme.StatusWarn"    Color="#CA5010"/>
+  <SolidColorBrush x:Key="Theme.StatusErr"     Color="#C50F1F"/>
+</ResourceDictionary>

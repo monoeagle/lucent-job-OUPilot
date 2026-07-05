@@ -19,6 +19,7 @@ $modules = @(
     'core/ad-writer.psm1',
     'core/mapping-store.psm1',
     'core/import-engine.psm1',
+    'ui/theme-loader.psm1',
     'ui/about-dialog.psm1',
     'ui/main-window.psm1'
 )

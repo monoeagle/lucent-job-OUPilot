@@ -1,5 +1,15 @@
 # Changelog — OUPilot
 
+## 1.1.0
+- Theme-System (Muster wie CodeSigningCommander): Menü **Ansicht** schaltet
+  **Farbschema** (12 Paletten: Gray, Slate, Blue, Ocean, Teal, Mint, Sage,
+  Forest, Amber, Coral, Rose, Purple) und **Stil** (Sharp/Soft) live um.
+- Palette + Stil als getrennte ResourceDictionaries (`ui/theme-loader.psm1`,
+  `ui/themes/`); Control-Styles ziehen Farben per DynamicResource.
+- Auswahl wird in `settings.json` persistiert (`UiStyle`, `UiPalette`).
+- Haupt-, Rechner-Übersicht- und Info-Fenster nutzen jetzt Theme-Farben statt
+  hartkodierter Werte.
+
 ## 1.0.0
 - OU-/Gruppen-TreeView mit Standorten → Unterstandorten → Anwendungs-Gruppen.
 - AD-Lesen mit Fallback: ActiveDirectory-Modul → ADSI → Mock (ohne Domäne).
