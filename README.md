@@ -247,6 +247,8 @@ Der Entwicklungs-Client ist bewusst vom AD abgekoppelt. Deshalb:
   `NotFound`, ohne etwas zu schreiben. Stimmt das Bild, Haken entfernen und echt
   importieren. `Logs\oupilot.log` protokolliert den genutzten Lese-/Schreibpfad.
 
+Schritt-für-Schritt zum Gegentest: **[docs/Testclient-Checkliste.md](docs/Testclient-Checkliste.md)**.
+
 ## Stand & nächste Schritte
 
 Erledigt: Baum, Auswahl, JSON-Parsing, **echtes AD-Membership-Schreiben**
