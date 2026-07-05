@@ -8,5 +8,8 @@ data/mapping.json
 # Site-spezifische Feld-Map (Vorlage: samples/fieldmap.example.json)
 fieldmap.json
 
+# Generierte Doku-Site (aus run-docs.ps1 / docs-site\Build-DocsSite.ps1)
+docs-site/site/
+
 # Headless-Testskripte (werden nach Nutzung gelöscht)
 samples/__*.ps1

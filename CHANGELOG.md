@@ -1,5 +1,12 @@
 # Changelog — OUPilot
 
+## Unreleased
+- Lokale Doku-Site: `run-docs.ps1` baut aus README/CHANGELOG/Testclient-Checkliste
+  eine statische HTML-Website (`docs-site\`) und öffnet sie; `-Serve` startet einen
+  lokalen Server. Abhängigkeitsfrei (reines PowerShell, kein Python/Node, No-CDN),
+  mit Seiten-Navigation und Hell/Dunkel-Umschaltung. Generat (`docs-site\site\`)
+  ist gitignored.
+
 ## 1.4.0
 - Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via
   Settings-Key `FieldMapPath`) ergänzt die Parser-Feldnamen um site-spezifische

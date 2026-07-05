@@ -47,6 +47,20 @@ benötigt die Desktop-Edition. **Ohne Domäne** fällt das Einlesen automatisch 
 Fertige App als Zip: **[neuestes Release](https://github.com/monoeagle/lucent-job-OUPilot/releases/latest)**
 (`OUPilot-1.4.0.zip` entpacken, `run.ps1` starten) — oder das Repo klonen.
 
+## Dokumentation lokal ansehen
+
+Dieses README, die Testclient-Checkliste und der Changelog lassen sich als lokale,
+statische Website ansehen — **ohne Python/Node, ohne CDN**, rein PowerShell:
+
+```powershell
+.\run-docs.ps1            # baut die Site und öffnet sie im Browser
+.\run-docs.ps1 -Serve     # lokaler Server auf http://localhost:8099
+```
+
+Der Generator (`docs-site\Build-DocsSite.ps1` + `Convert-Markdown.psm1`) rendert die
+Markdown-Dateien zu einer self-contained HTML-Site (`docs-site\site\`, gitignored)
+mit Seiten-Navigation und Hell/Dunkel-Umschaltung.
+
 ## AD-Auslesen (mit Fallback)
 
 Einstellung `AdMode` in `settings.json`:
@@ -235,6 +249,10 @@ ui/
     sharp.xaml          Stil „Sharp" (scharfe Ecken) — Geometrie + Control-Styles
     soft.xaml           Stil „Soft" (3px-Ecken) — Geometrie + Control-Styles
     palettes/*.xaml     12 Farbschemata (nur Brushes)
+run-docs.ps1            Doku-Site bauen + öffnen (rein PowerShell, No-CDN)
+docs-site/
+  Convert-Markdown.psm1 Markdown->HTML-Konverter (abhängigkeitsfrei)
+  Build-DocsSite.ps1    baut docs-site\site\ aus README/CHANGELOG/docs
 tools/
   Ensure-Utf8Bom.ps1    Quelldateien als UTF-8 mit BOM sichern + Parsecheck
 samples/                Beispiel-Exporte + fieldmap.example.json
