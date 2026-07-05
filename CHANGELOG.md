@@ -1,11 +1,5 @@
 # Changelog — OUPilot
 
-## Unreleased
-- Doku: Testclient-Checkliste für den echten AD-Gegentest ergänzt
-  (`docs/Testclient-Checkliste.md`, aus README verlinkt) — Add/Remove je erst
-  WhatIf dann echt, GUID-Wiedererkennung, Standort-Konflikt, Status-Tabelle,
-  Abnahme.
-
 ## 1.4.0
 - Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via
   Settings-Key `FieldMapPath`) ergänzt die Parser-Feldnamen um site-spezifische
@@ -15,6 +9,10 @@
   Zahl aktiver eigener Feldnamen. Vorlage: `samples/fieldmap.example.json`.
 - core: `Get-OupFieldMapPath`, `Import-OupFieldMap`, `Set-OupFieldMap`
   (import-engine); Schlüssel für Identifier-Map und Sammel-/Geräte-Parser.
+- Doku: Testclient-Checkliste für den echten AD-Gegentest
+  (`docs/Testclient-Checkliste.md`, aus README verlinkt) — Add/Remove je erst
+  WhatIf dann echt, GUID-Wiedererkennung, Standort-Konflikt, Status-Tabelle,
+  Abnahme.
 
 ## 1.3.0
 - Mitglieder entfernen: bei gewählter Gruppe im Grid markierte Rechner per
