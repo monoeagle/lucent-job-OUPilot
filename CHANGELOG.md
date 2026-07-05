@@ -1,5 +1,11 @@
 # Changelog — OUPilot
 
+## 1.2.0
+- Baum-Filter: Suchfeld über dem OU-/Gruppen-Baum filtert live nach Namen
+  (Teiltext, case-insensitiv). Vorfahren von Treffern bleiben sichtbar, matcht
+  ein OU-Name selbst, erscheint der ganze Teilbaum; OU-Knoten werden bei aktivem
+  Filter aufgeklappt. Statuszeile zeigt die Trefferzahl, ✕-Button leert den Filter.
+
 ## 1.1.0
 - Theme-System (Muster wie CodeSigningCommander): Menü **Ansicht** schaltet
   **Farbschema** (12 Paletten: Gray, Slate, Blue, Ocean, Teal, Mint, Sage,

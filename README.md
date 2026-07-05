@@ -136,6 +136,16 @@ Standort/Unterstandort, AD-Status und Quelle. Ist er in mehreren Standorten,
 erscheint eine Warnung. (Quelle ist der lokale Store; echte AD-`memberOf`-Abfrage
 ist als Erweiterung vorgesehen.)
 
+### Baum-Filter
+
+Über dem Baum filtert ein Suchfeld die Struktur **live** nach OU- oder
+Gruppennamen (Teiltext, Groß-/Kleinschreibung egal). Angezeigt wird ein Knoten,
+wenn sein Name passt **oder** ein Nachfahre passt — die Vorfahren bleiben also
+sichtbar, damit Treffer erreichbar sind; matcht ein OU-Name selbst, erscheint
+sein kompletter Teilbaum. Bei aktivem Filter werden OU-Knoten automatisch
+aufgeklappt; die Statuszeile nennt die Trefferzahl. Der **✕**-Button leert das
+Feld und stellt den vollen Baum wieder her.
+
 ### Info-Dialog
 
 Menü **_Info** öffnet den Über-Dialog (Tabs *Info* mit System-/Projekt-/
@@ -210,10 +220,11 @@ Der Entwicklungs-Client ist bewusst vom AD abgekoppelt. Deshalb:
 
 Erledigt: Baum, Auswahl, JSON-Parsing, **echtes AD-Membership-Schreiben**
 (`Add-ADGroupMember` + ADSI-Fallback) mit WhatIf/Bestätigung, Store mit AD-Status,
-**Theme-System** (12 Paletten + 2 Stile, live umschaltbar, Menü *Ansicht*).
+**Theme-System** (12 Paletten + 2 Stile, live umschaltbar, Menü *Ansicht*),
+**Baum-Filter** (Live-Suche nach OU-/Gruppennamen).
 
 Noch offen / bewusst später:
-- Suche/Filter im Baum, Entfernen einzelner Mitglieder (auch aus dem AD).
+- Entfernen einzelner Mitglieder (auch aus dem AD).
 - Konfigurierbare Feld-Map für exotische Export-Formate (Grundgerüst in
   `import-engine.psm1` vorhanden: `$script:OupFieldMap`).
 ```

@@ -30,6 +30,8 @@ $script:oupLookupLocs   = $null   # Rechner-Übersicht: Standort-Map
 $script:oupImportMode   = 'Group' # 'Group' (Gruppe gewählt) | 'SubOU' (Unterstandort)
 $script:oupPaletteItems = $null   # Ansicht-Menü: Palette-Name -> MenuItem (Häkchen)
 $script:oupStyleItems   = $null   # Ansicht-Menü: Stil-Name    -> MenuItem (Häkchen)
+$script:oupFilter       = ''      # aktiver Baum-Filter (Teiltext, case-insensitiv)
+$script:oupFilterHits   = 0       # Anzahl namentlicher Treffer beim letzten Render
 
 $script:OupMainXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -74,6 +76,16 @@ $script:OupMainXaml = @'
       <!-- Links: OU-/Gruppen-Baum -->
       <DockPanel Grid.Column="0">
         <TextBlock DockPanel.Dock="Top" Text="OU-Struktur &amp; AD-Gruppen" FontWeight="SemiBold" Margin="8,8,8,4"/>
+        <Grid DockPanel.Dock="Top" Margin="8,0,8,6">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox x:Name="TxtFilter" Grid.Column="0" VerticalContentAlignment="Center"
+                   ToolTip="Nach OU- oder Gruppennamen filtern (Teiltext)"/>
+          <Button x:Name="BtnFilterClear" Grid.Column="1" Content="&#x2715;" Width="26" Margin="4,0,0,0"
+                  ToolTip="Filter löschen"/>
+        </Grid>
         <TreeView x:Name="TreeAd" Margin="8,0,8,8" Background="{DynamicResource Theme.Background}" BorderBrush="{DynamicResource Theme.Border}"/>
       </DockPanel>
 
@@ -155,31 +167,91 @@ function _Oup-UpdateGroupHeader {
     }
 }
 
-function _Oup-AddTreeNodes {
-    <#
-        .SYNOPSIS  Baut TreeViewItem-Objekte rekursiv aus den AD-Knoten.
-        .DESCRIPTION  Bewusst manuell statt HierarchicalDataTemplate: WPF kann
-                      ObservableCollection-Properties auf PSCustomObject nicht
-                      zuverlässig nach IEnumerable binden. Der AD-Knoten hängt
-                      als .Tag am TreeViewItem (für Auswahl/Logik). Gruppen werden
-                      zusätzlich in $script:oupNodeToItem registriert.
-        .PARAMETER Nodes   Liste der AD-Knoten dieser Ebene.
-        .PARAMETER ItemsCollection  TreeView.Items oder TreeViewItem.Items.
-        .PARAMETER Depth   Tiefe (0 = Wurzel) — steuert das Auto-Aufklappen.
-    #>
-    param([object[]]$Nodes, $ItemsCollection, [int]$Depth = 0)
+function _Oup-NodeNameHit {
+    <#  .SYNOPSIS  $true, wenn der Knotenname den Filter als Teiltext (case-
+                   insensitiv) enthält. Leerer Filter zählt nicht als Treffer.  #>
+    param($Node, [string]$Filter)
+    if (-not $Filter) { return $false }
+    return ($Node.Name.IndexOf($Filter, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)
+}
 
-    foreach ($n in ($Nodes | Sort-Object @{e={$_.NodeType}}, Name)) {
-        $tvi = New-Object System.Windows.Controls.TreeViewItem
-        $tvi.Header     = (_Oup-NodeHeader $n)
-        $tvi.Tag        = $n
-        # Obere OU-Ebenen offen (Standorte/Unterstandorte), Gruppen erst auf Klick.
-        $tvi.IsExpanded = ($n.NodeType -eq 'OU' -and $Depth -le 1)
-        if ($n.NodeType -eq 'Group' -and $script:oupNodeToItem) { $script:oupNodeToItem[$n.Guid] = $tvi }
-        if ($n.Children -and $n.Children.Count -gt 0) {
-            _Oup-AddTreeNodes -Nodes @($n.Children) -ItemsCollection $tvi.Items -Depth ($Depth + 1)
+function _Oup-BuildFilteredItem {
+    <#
+        .SYNOPSIS  Baut rekursiv ein TreeViewItem für einen AD-Knoten unter
+                   Beachtung des Filters. Gibt $null zurück, wenn der Knoten samt
+                   Teilbaum herausgefiltert wird.
+        .DESCRIPTION  Bewusst manuell statt HierarchicalDataTemplate: WPF bindet
+                      ObservableCollection-Properties auf PSCustomObject in PS 5.1
+                      nicht zuverlässig. Der AD-Knoten hängt als .Tag am Item.
+                      Sichtbarkeitsregel bei aktivem Filter: ein Knoten erscheint,
+                      wenn (a) ein Vorfahre matchte, (b) sein eigener Name matcht,
+                      oder (c) ein Nachfahre matcht. Matcht der Name selbst (oder
+                      ein Vorfahre), wird der komplette Teilbaum ungefiltert
+                      gezeigt. OU-Knoten werden bei aktivem Filter aufgeklappt,
+                      damit Treffer sofort sichtbar sind; ohne Filter nur die
+                      oberen zwei Ebenen (Standorte/Unterstandorte).
+        .PARAMETER AncestorMatched  Ein Vorfahre hat bereits gematcht -> Teilbaum
+                                    ungefiltert übernehmen.
+        .PARAMETER Depth  Tiefe (0 = Wurzel).
+    #>
+    param($Node, [string]$Filter, [bool]$AncestorMatched, [int]$Depth)
+
+    $nameHit   = _Oup-NodeNameHit -Node $Node -Filter $Filter
+    $selfShown = (-not $Filter) -or $AncestorMatched -or $nameHit
+    if ($nameHit) { $script:oupFilterHits++ }
+
+    # Kinder rekursiv (Reihenfolge wie bisher: erst nach NodeType, dann Name).
+    $childItems = New-Object System.Collections.Generic.List[object]
+    if ($Node.Children -and $Node.Children.Count -gt 0) {
+        foreach ($c in (@($Node.Children) | Sort-Object @{e={$_.NodeType}}, Name)) {
+            $ci = _Oup-BuildFilteredItem -Node $c -Filter $Filter `
+                    -AncestorMatched ($AncestorMatched -or $nameHit) -Depth ($Depth + 1)
+            if ($ci) { [void]$childItems.Add($ci) }
         }
-        [void]$ItemsCollection.Add($tvi)
+    }
+
+    # Herausfiltern, wenn weder selbst sichtbar noch ein sichtbares Kind.
+    if (-not ($selfShown -or $childItems.Count -gt 0)) { return $null }
+
+    $tvi = New-Object System.Windows.Controls.TreeViewItem
+    $tvi.Header = (_Oup-NodeHeader $Node)
+    $tvi.Tag    = $Node
+    if ($Node.NodeType -eq 'Group' -and $script:oupNodeToItem) { $script:oupNodeToItem[$Node.Guid] = $tvi }
+    foreach ($ci in $childItems) { [void]$tvi.Items.Add($ci) }
+    $tvi.IsExpanded = if ($Filter) { ($Node.NodeType -eq 'OU') } else { ($Node.NodeType -eq 'OU' -and $Depth -le 1) }
+    return $tvi
+}
+
+function _Oup-RenderTree {
+    <#  .SYNOPSIS  Zeichnet die TreeView aus $script:oupRoots unter dem aktuellen
+                   Filter neu und baut die Gruppen-GUID->Item-Map neu auf.  #>
+    if (-not $script:oupTree) { return }
+    $script:oupTree.Items.Clear()
+    $script:oupNodeToItem = @{}
+    $script:oupFilterHits = 0
+    foreach ($n in (@($script:oupRoots) | Sort-Object @{e={$_.NodeType}}, Name)) {
+        $tvi = _Oup-BuildFilteredItem -Node $n -Filter $script:oupFilter -AncestorMatched $false -Depth 0
+        if ($tvi) { [void]$script:oupTree.Items.Add($tvi) }
+    }
+}
+
+function _Oup-OnFilterChanged {
+    <#  .SYNOPSIS  Reagiert auf Änderungen im Filter-Textfeld: Baum neu zeichnen
+                   und Treffer in der Statuszeile melden (ohne Log-Spam).  #>
+    param([string]$Text)
+    $script:oupFilter = ([string]$Text).Trim()
+    _Oup-RenderTree
+    $status = if ($script:oupWindow) { $script:oupWindow.FindName('TxtStatus') } else { $null }
+    if ($status) {
+        if ($script:oupFilter) {
+            $status.Text = if ($script:oupFilterHits -gt 0) {
+                "Filter '$($script:oupFilter)': $($script:oupFilterHits) Treffer."
+            } else {
+                "Filter '$($script:oupFilter)': keine Treffer."
+            }
+        } else {
+            $status.Text = 'Bereit.'
+        }
     }
 }
 
@@ -192,10 +264,8 @@ function _Oup-LoadTree {
     _Oup-SetStatus "Lese AD ein (Modus: $mode)..."
     $result = Get-OupAdTree -Mode $mode -SearchBase $base -Server $server
 
-    $script:oupTree.Items.Clear()
-    $script:oupNodeToItem = @{}                 # Map für Header-Updates neu aufbauen
-    _Oup-AddTreeNodes -Nodes @($result.Roots) -ItemsCollection $script:oupTree.Items
     $script:oupRoots      = $result.Roots      # für Sammelimport-Gruppenindex
+    _Oup-RenderTree                             # zeichnet Baum (unter aktuellem Filter), baut GUID->Item-Map neu
     $script:oupAdModeUsed = $result.ModeUsed   # bestimmt den Schreibmodus beim Import
     $modeText = if ($result.ModeUsed -eq 'Mock') { "Mock-Daten (keine Domäne)" } else { $result.ModeUsed }
     $script:oupWindow.FindName('TxtMode').Text = "Quelle: $modeText"
@@ -939,13 +1009,18 @@ function Show-OupMainWindow {
     })
     $script:oupWindow.FindName('BtnImportAssign').Add_Click({ _Oup-OnImportAssign })
 
+    # Baum-Filter: bei jeder Eingabe neu zeichnen; ✕-Button leert das Feld
+    # (das TextChanged-Event zeichnet dann den vollen Baum).
+    $script:oupWindow.FindName('TxtFilter').Add_TextChanged({ param($s, $e) _Oup-OnFilterChanged -Text $s.Text })
+    $script:oupWindow.FindName('BtnFilterClear').Add_Click({ $script:oupWindow.FindName('TxtFilter').Text = '' })
+
     # Menü.
     $script:oupWindow.FindName('MenuReload').Add_Click({ _Oup-LoadTree })
     $script:oupWindow.FindName('MenuExit').Add_Click({ $script:oupWindow.Close() })
     $script:oupWindow.FindName('MenuClientLookup').Add_Click({ _Oup-OnClientLookup })
     $script:oupWindow.FindName('MenuInfo').Add_Click({
         if (Get-Command Show-OupAboutDialog -ErrorAction SilentlyContinue) {
-            Show-OupAboutDialog -Version '1.1.0' -Settings $script:oupSettings -Owner $script:oupWindow
+            Show-OupAboutDialog -Version '1.2.0' -Settings $script:oupSettings -Owner $script:oupWindow
         }
     })
 
