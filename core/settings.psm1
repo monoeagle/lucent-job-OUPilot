@@ -14,6 +14,10 @@ function Get-OupDefaultSettings {
         AdServer      = ''
         # Pfad zum GUID-Mapping-Store (leer = <AppRoot>\data\mapping.json).
         MappingPath   = ''
+        # Pfad zur optionalen Feld-Map für exotische Export-Formate
+        # (leer = <AppRoot>\fieldmap.json; fehlt die Datei, gelten nur die
+        # eingebauten Feldnamen). Siehe samples\fieldmap.example.json.
+        FieldMapPath  = ''
         # UI — Theme-System (Muster wie CodeSigningCommander):
         #   UiStyle   = Geometrie 'Sharp' (scharfe Ecken) | 'Soft' (3px, luftiger)
         #   UiPalette = Farbschema (Gray, Slate, Blue, Ocean, Teal, Mint, Sage,

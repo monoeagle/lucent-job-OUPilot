@@ -1,0 +1,18 @@
+{
+  "_hinweis": "Kopiere diese Datei nach ..\\fieldmap.json (App-Root) und trage die Feldnamen deines Export-Formats ein. Eigene Namen werden den eingebauten Kandidaten VORANGESTELLT (gewinnen bei Konflikt); leere Listen aendern nichts. Keys sind optional - nur eintragen, was du brauchst.",
+
+  "Name":       ["assetTag", "geraeteName"],
+  "Sid":        ["securityId"],
+  "Guid":       ["objGuid"],
+  "Dn":         ["ldapDn"],
+  "Sam":        ["samKonto"],
+  "ObjectType": ["klasse"],
+
+  "AssignCompFields":  ["geraet", "asset"],
+  "AssignGroupFields": ["softwareGruppen", "zielGruppen"],
+
+  "DevStandortFields": ["buero", "niederlassung"],
+  "DevAssignFields":   ["pakete", "zuweisungenListe"],
+  "SoftwareFields":    ["produkt", "paketName"],
+  "TypeFields":        ["kategorie", "auftragsArt"]
+}

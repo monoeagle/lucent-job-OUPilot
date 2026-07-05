@@ -32,6 +32,7 @@ $script:oupPaletteItems = $null   # Ansicht-Menü: Palette-Name -> MenuItem (Hä
 $script:oupStyleItems   = $null   # Ansicht-Menü: Stil-Name    -> MenuItem (Häkchen)
 $script:oupFilter       = ''      # aktiver Baum-Filter (Teiltext, case-insensitiv)
 $script:oupFilterHits   = 0       # Anzahl namentlicher Treffer beim letzten Render
+$script:oupFieldMapNote = $null   # Startup-Hinweis, wenn eine Feld-Map aktiv ist
 
 $script:OupMainXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -1059,6 +1060,24 @@ function Show-OupMainWindow {
     $script:oupMappingPath = Get-OupMappingPath -ConfiguredPath $script:oupSettings.MappingPath -AppRoot $AppRoot
     $script:oupStore       = Import-OupMapping -Path $script:oupMappingPath
 
+    # Feld-Map (optional) laden und anwenden — erweitert die Parser-Feldnamen um
+    # site-spezifische aus fieldmap.json (falls vorhanden). Vor jedem Import wirksam.
+    $script:oupFieldMapNote = $null
+    try {
+        $fmPath = Get-OupFieldMapPath -ConfiguredPath $script:oupSettings.FieldMapPath -AppRoot $AppRoot
+        $fmCfg  = Import-OupFieldMap -Path $fmPath
+        if ($fmCfg) {
+            $fm = Set-OupFieldMap -Config $fmCfg
+            if ($fm.CustomCount -gt 0) {
+                Write-OupLog ("Feld-Map aktiv: {0} eigene Feldname(n) aus {1} ({2})." -f `
+                    $fm.CustomCount, (Split-Path -Leaf $fmPath), ($fm.Keys -join ', '))
+                $script:oupFieldMapNote = "Feld-Map: $($fm.CustomCount) eigene Feldnamen aktiv."
+            }
+        }
+    } catch {
+        Write-OupLog "Feld-Map konnte nicht angewendet werden: $($_.Exception.Message)" 'WARN'
+    }
+
     # Theme (Palette + Stil) laden — MUSS vor XamlReader.Load stehen, damit die
     # DynamicResource-Referenzen im Fenster aufgelöst werden. Legt bei Bedarf ein
     # Application-Objekt an und merged die ResourceDictionaries app-weit.
@@ -1104,7 +1123,7 @@ function Show-OupMainWindow {
     $script:oupWindow.FindName('MenuClientLookup').Add_Click({ _Oup-OnClientLookup })
     $script:oupWindow.FindName('MenuInfo').Add_Click({
         if (Get-Command Show-OupAboutDialog -ErrorAction SilentlyContinue) {
-            Show-OupAboutDialog -Version '1.3.0' -Settings $script:oupSettings -Owner $script:oupWindow
+            Show-OupAboutDialog -Version '1.4.0' -Settings $script:oupSettings -Owner $script:oupWindow
         }
     })
 
@@ -1113,6 +1132,10 @@ function Show-OupMainWindow {
 
     # Erstbefüllung.
     _Oup-LoadTree
+    if ($script:oupFieldMapNote) {
+        $st = $script:oupWindow.FindName('TxtStatus')
+        if ($st) { $st.Text = "$($st.Text)  ·  $($script:oupFieldMapNote)" }
+    }
 
     # Optionaler Selbsttest: nach SelfTestMs automatisch schließen.
     if ($SelfTestMs -gt 0) {

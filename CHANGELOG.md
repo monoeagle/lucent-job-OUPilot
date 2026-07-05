@@ -1,5 +1,15 @@
 # Changelog — OUPilot
 
+## 1.4.0
+- Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via
+  Settings-Key `FieldMapPath`) ergänzt die Parser-Feldnamen um site-spezifische
+  für exotische Export-Formate — eigene Namen werden vorangestellt (gewinnen),
+  case-insensitiv dedupliziert; bestehende Formate bleiben unberührt.
+- Beim Start geladen/angewandt (`Set-OupFieldMap`); Statuszeile + Log melden die
+  Zahl aktiver eigener Feldnamen. Vorlage: `samples/fieldmap.example.json`.
+- core: `Get-OupFieldMapPath`, `Import-OupFieldMap`, `Set-OupFieldMap`
+  (import-engine); Schlüssel für Identifier-Map und Sammel-/Geräte-Parser.
+
 ## 1.3.0
 - Mitglieder entfernen: bei gewählter Gruppe im Grid markierte Rechner per
   „Ausgewählte entfernen…" aus der AD-Gruppe (Remove-ADGroupMember → ADSI, bei

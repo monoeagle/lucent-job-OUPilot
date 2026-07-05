@@ -5,5 +5,8 @@ Logs/konflikte-*.csv
 # Laufzeit-Store (GUID-Mapping, dev/mock — wird von der App geschrieben)
 data/mapping.json
 
+# Site-spezifische Feld-Map (Vorlage: samples/fieldmap.example.json)
+fieldmap.json
+
 # Headless-Testskripte (werden nach Nutzung gelöscht)
 samples/__*.ps1

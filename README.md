@@ -119,6 +119,23 @@ Ein Ergebnis-Dialog fasst zusammen: Rechner → Gruppen, Mitgliedschaften, Statu
 Beispiel: `samples\assign-sammelliste.json`. Feldaliasse: Rechner über
 `computer`/`rechner`/`name`/…, Gruppen über `groups`/`gruppen`/`apps`/….
 
+### Feld-Map (exotische Export-Formate)
+
+Die Parser suchen Werte in einer Liste bekannter Feldnamen (z. B. Rechnername in
+`name`/`cn`/`computerName`/…). Bringt ein Export **abweichende** Feldnamen mit,
+lassen sie sich **ohne Code-Änderung** ergänzen: eine optionale `fieldmap.json`
+im App-Root (Pfad via `FieldMapPath` in `settings.json` überschreibbar). Die
+eigenen Namen werden den eingebauten **vorangestellt** (gewinnen bei Konflikt),
+case-insensitiv dedupliziert — bestehende Formate bleiben unberührt. Fehlt die
+Datei, gelten nur die eingebauten Namen.
+
+Vorlage: **`samples\fieldmap.example.json`** → nach `fieldmap.json` kopieren und
+nur die benötigten Schlüssel füllen. Verfügbare Schlüssel: `Name`, `Sid`, `Guid`,
+`Dn`, `Sam`, `ObjectType` (Identifier-Auflösung) sowie `AssignGroupFields`,
+`AssignCompFields`, `DevStandortFields`, `DevAssignFields`, `SoftwareFields`,
+`TypeFields` (Sammelliste / Geräte-Import). Beim Start meldet die Statuszeile,
+wie viele eigene Feldnamen aktiv sind.
+
 ### Standort-Eindeutigkeit (Konflikte)
 
 Ein Rechner darf nur in Gruppen **eines** Standorts sein (mehrere Gruppen/
@@ -202,7 +219,7 @@ core/
   ad-reader.psm1        OU/Gruppen lesen (Modul/ADSI/Mock), GUID als Schlüssel
   ad-writer.psm1        Rechner als Gruppenmitglieder schreiben (Modul/ADSI/Mock)
   mapping-store.psm1    GUID-Mapping-Store (data\mapping.json)
-  import-engine.psm1    JSON-Exporte parsen & normalisieren
+  import-engine.psm1    JSON-Exporte parsen & normalisieren (+ Feld-Map)
 ui/
   main-window.psm1      Hauptfenster: OU-TreeView + Import-Panel
   about-dialog.psm1     Info-/Über-Dialog (Tabs Info + Changelog)
@@ -213,7 +230,8 @@ ui/
     palettes/*.xaml     12 Farbschemata (nur Brushes)
 tools/
   Ensure-Utf8Bom.ps1    Quelldateien als UTF-8 mit BOM sichern + Parsecheck
-samples/                Beispiel-Exporte zum Ausprobieren
+samples/                Beispiel-Exporte + fieldmap.example.json
+fieldmap.json           optional (App-Root): eigene Feldnamen; nicht eingecheckt
 ```
 
 ## Entwicklung ohne Domäne / Test am Testclient
@@ -235,9 +253,10 @@ Erledigt: Baum, Auswahl, JSON-Parsing, **echtes AD-Membership-Schreiben**
 (`Add-ADGroupMember` + ADSI-Fallback) mit WhatIf/Bestätigung, Store mit AD-Status,
 **Theme-System** (12 Paletten + 2 Stile, live umschaltbar, Menü *Ansicht*),
 **Baum-Filter** (Live-Suche nach OU-/Gruppennamen),
-**Mitglieder entfernen** (aus AD + Store, mit WhatIf/Bestätigung).
+**Mitglieder entfernen** (aus AD + Store, mit WhatIf/Bestätigung),
+**konfigurierbare Feld-Map** (`fieldmap.json` für exotische Export-Formate).
 
 Noch offen / bewusst später:
-- Konfigurierbare Feld-Map für exotische Export-Formate (Grundgerüst in
-  `import-engine.psm1` vorhanden: `$script:OupFieldMap`).
+- Echtes AD (Modul/ADSI) am Domänen-Testclient gegenprüfen — hier ist bislang
+  nur der Mock-Pfad verifiziert (siehe Abschnitt *Entwicklung ohne Domäne*).
 ```

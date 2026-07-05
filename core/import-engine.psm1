@@ -7,6 +7,11 @@
 #   - Top-Level-Array  von Objekten          -> Felder gemäß Map auslesen
 #   - Objekt mit Listen-Property (items/...)  -> diese Liste verwenden
 #
+# Eigene Feldnamen für exotische Exporte kommen aus einer optionalen fieldmap.json
+# (App-Root, Pfad via Settings-Key FieldMapPath überschreibbar). Sie ERWEITERT die
+# eingebauten Kandidaten (custom zuerst -> gewinnt), dedupliziert case-insensitiv;
+# angewendet beim Start via Set-OupFieldMap. Siehe samples\fieldmap.example.json.
+#
 # Normalisierter Eintrag:
 #   { importedAt; sourceFile; type; identifier; raw }
 #     type        'computer' | 'group' | 'user' | 'unknown'
@@ -258,4 +263,104 @@ function Read-OupDeviceAssignmentFile {
     return [PSCustomObject]@{ IsDeviceAssignment = $looks; Devices = $devices.ToArray(); SourceFile = $Path; Error = $null }
 }
 
-Export-ModuleMember -Function Read-OupExportFile, Read-OupAssignmentFile, Read-OupDeviceAssignmentFile
+# ─────────────────────────────────────────────────────────────────────────────
+# Konfigurierbare Feld-Map: eigene Feldnamen aus fieldmap.json ergänzen.
+# ─────────────────────────────────────────────────────────────────────────────
+function Get-OupFieldMapPath {
+    <#  .SYNOPSIS  Effektiver Pfad zur Feld-Map (Default: <AppRoot>\fieldmap.json).  #>
+    param([string]$ConfiguredPath, [Parameter(Mandatory)][string]$AppRoot)
+    if ($ConfiguredPath) { return $ConfiguredPath }
+    return Join-Path $AppRoot 'fieldmap.json'
+}
+
+function Import-OupFieldMap {
+    <#  .SYNOPSIS  Lädt fieldmap.json (oder $null, wenn nicht vorhanden/ungültig).  #>
+    param([Parameter(Mandatory)][string]$Path)
+    if (-not (Test-Path $Path)) { return $null }
+    try {
+        return (Get-Content $Path -Raw | ConvertFrom-Json)
+    } catch {
+        if (Get-Command Write-OupLog -ErrorAction SilentlyContinue) {
+            Write-OupLog "fieldmap.json unlesbar, ignoriere: $($_.Exception.Message)" 'WARN'
+        }
+        return $null
+    }
+}
+
+function _Oup-CfgList {
+    <#  .SYNOPSIS  Liest eine Feldnamen-Liste case-insensitiv aus dem Config-Objekt
+                   (PSCustomObject aus JSON oder Hashtable). Fehlt der Key -> @().  #>
+    param($Config, [string]$Key)
+    $val = $null
+    if ($Config -is [System.Collections.IDictionary]) {
+        foreach ($k in @($Config.Keys)) { if ("$k" -ieq $Key) { $val = $Config[$k]; break } }
+    } elseif ($Config) {
+        $p = $Config.PSObject.Properties | Where-Object { $_.Name -ieq $Key } | Select-Object -First 1
+        if ($p) { $val = $p.Value }
+    }
+    if ($null -eq $val) { return @() }
+    return @(@($val) | ForEach-Object { "$_" } | Where-Object { $_ })
+}
+
+function _Oup-MergeFieldList {
+    <#  .SYNOPSIS  Custom-Namen vor die Basis stellen, case-insensitiv dedupen
+                   (erste Nennung gewinnt -> idempotent bei erneutem Anwenden).  #>
+    param([string[]]$Custom, [string[]]$Base)
+    $seen = @{}
+    $out  = New-Object System.Collections.Generic.List[string]
+    foreach ($n in (@($Custom) + @($Base))) {
+        if (-not $n) { continue }
+        $k = $n.ToLowerInvariant()
+        if ($seen.ContainsKey($k)) { continue }
+        $seen[$k] = $true
+        $out.Add($n)
+    }
+    return $out.ToArray()
+}
+
+function Set-OupFieldMap {
+    <#
+        .SYNOPSIS  Wendet eine Feld-Map-Konfiguration auf die Parser an: eigene
+                   Feldnamen werden den eingebauten Kandidaten vorangestellt.
+        .DESCRIPTION  Bekannte Schlüssel: Name, Sid, Guid, Dn, Sam, ObjectType
+                      (Identifier-Map) sowie AssignGroupFields, AssignCompFields,
+                      DevStandortFields, DevAssignFields, SoftwareFields, TypeFields.
+                      Idempotent (case-insensitive Dedupe).
+        .OUTPUTS   PSCustomObject @{ CustomCount; Keys } — Summe eigener Namen und
+                   die Config-Schlüssel, die etwas beigesteuert haben.
+    #>
+    param($Config)
+
+    $touched = New-Object System.Collections.Generic.List[string]
+    $total   = 0
+    $m       = $script:OupFieldMap
+
+    # Identifier-Map (Sub-Arrays).
+    foreach ($key in @('Name', 'Sid', 'Guid', 'Dn', 'Sam', 'ObjectType')) {
+        $custom = _Oup-CfgList $Config $key
+        if ($custom.Count -gt 0) { $touched.Add($key); $total += $custom.Count }
+        $m[$key] = _Oup-MergeFieldList $custom $m[$key]
+    }
+
+    # Listen-Variablen (Sammelliste / Geräte-Zuweisung).
+    $listVars = @{
+        AssignGroupFields = 'OupAssignGroupFields'
+        AssignCompFields  = 'OupAssignCompFields'
+        DevStandortFields = 'OupDevStandortFields'
+        DevAssignFields   = 'OupDevAssignFields'
+        SoftwareFields    = 'OupSoftwareFields'
+        TypeFields        = 'OupTypeFields'
+    }
+    foreach ($key in $listVars.Keys) {
+        $custom = _Oup-CfgList $Config $key
+        if ($custom.Count -gt 0) { $touched.Add($key); $total += $custom.Count }
+        $varName = $listVars[$key]
+        $merged  = _Oup-MergeFieldList $custom (Get-Variable -Name $varName -Scope Script -ValueOnly)
+        Set-Variable -Name $varName -Scope Script -Value $merged
+    }
+
+    return [PSCustomObject]@{ CustomCount = $total; Keys = $touched.ToArray() }
+}
+
+Export-ModuleMember -Function Read-OupExportFile, Read-OupAssignmentFile, Read-OupDeviceAssignmentFile, `
+    Get-OupFieldMapPath, Import-OupFieldMap, Set-OupFieldMap
