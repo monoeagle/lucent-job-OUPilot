@@ -4,6 +4,10 @@ WPF-Anwendung (Windows PowerShell 5.1) zum Hinzufügen von **Rechnern** zu
 **AD-(Software-)Gruppen** entlang der OU-Struktur — Architektur nach Vorbild des
 *CodeSigningCommander* (XAML als Here-String, Module je Komponente, JSON-State).
 
+**Aktuelle Version:** [v1.4.0](https://github.com/monoeagle/lucent-job-OUPilot/releases/latest)
+· [alle Releases](https://github.com/monoeagle/lucent-job-OUPilot/releases)
+· [Changelog](CHANGELOG.md)
+
 ## Zweck
 
 Jede AD-Gruppe repräsentiert ein Softwarepaket (z. B. `StandortA-SoftwareXYZ`).
@@ -39,6 +43,9 @@ wiedererkannt; der Name ist reine Anzeige und wird jedes Mal frisch geholt.
 benötigt die Desktop-Edition. **Ohne Domäne** fällt das Einlesen automatisch auf
 **Mock-Daten** zurück, sodass die Oberfläche sofort bedienbar ist
 (Beispieldateien unter `samples\`).
+
+Fertige App als Zip: **[neuestes Release](https://github.com/monoeagle/lucent-job-OUPilot/releases/latest)**
+(`OUPilot-1.4.0.zip` entpacken, `run.ps1` starten) — oder das Repo klonen.
 
 ## AD-Auslesen (mit Fallback)
 
