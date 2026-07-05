@@ -1,5 +1,11 @@
 # Changelog — OUPilot
 
+## Unreleased
+- Doku: Testclient-Checkliste für den echten AD-Gegentest ergänzt
+  (`docs/Testclient-Checkliste.md`, aus README verlinkt) — Add/Remove je erst
+  WhatIf dann echt, GUID-Wiedererkennung, Standort-Konflikt, Status-Tabelle,
+  Abnahme.
+
 ## 1.4.0
 - Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via
   Settings-Key `FieldMapPath`) ergänzt die Parser-Feldnamen um site-spezifische
