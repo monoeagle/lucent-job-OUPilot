@@ -73,8 +73,8 @@ Beim Import werden die Rechner als Mitglieder in die gewählte Gruppe geschriebe
   und Anzahl.
 
 Status je Rechner (Spalte **AD-Status**, auch im Store gespeichert):
-`Added`, `AlreadyMember`, `NotFound`, `Would` (Testlauf), `Simuliert` (Mock),
-`Error`.
+`Added`, `AlreadyMember`, `Removed`, `NotMember`, `NotFound`, `Would` (Testlauf),
+`Simuliert` (Mock), `Error`.
 
 ### Import-Wege
 
@@ -135,6 +135,19 @@ Zeigt zu einem Rechnernamen alle Gruppen, in denen er laut Store steckt — mit
 Standort/Unterstandort, AD-Status und Quelle. Ist er in mehreren Standorten,
 erscheint eine Warnung. (Quelle ist der lokale Store; echte AD-`memberOf`-Abfrage
 ist als Erweiterung vorgesehen.)
+
+### Mitglieder entfernen
+
+Ist im Baum eine **Gruppe** gewählt, zeigt das Grid ihre gespeicherten
+Mitglieder. Eine oder mehrere Zeilen markieren (Mehrfachauswahl) und **Ausgewählte
+entfernen…** klicken: die Rechner werden aus der AD-Gruppe genommen
+(`Remove-ADGroupMember` → ADSI-Fallback, bei Mock nur simuliert) **und** aus dem
+lokalen Store gelöscht. Vor dem echten Schreiben fragt eine Ja/Nein-Box; mit
+**Nur Testlauf (WhatIf)** wird nur gemeldet, was passieren *würde*
+(Status `Would`), ohne etwas zu ändern. Aus dem Store entfernt wird nur, was
+danach tatsächlich kein Mitglied mehr ist (`Removed`/`NotMember`/`Simuliert`);
+war der Rechner gar nicht (mehr) drin, erscheint `NotMember`. Der Button ist nur
+aktiv, wenn eine Gruppe gewählt und mindestens eine Zeile markiert ist.
 
 ### Baum-Filter
 
@@ -221,10 +234,10 @@ Der Entwicklungs-Client ist bewusst vom AD abgekoppelt. Deshalb:
 Erledigt: Baum, Auswahl, JSON-Parsing, **echtes AD-Membership-Schreiben**
 (`Add-ADGroupMember` + ADSI-Fallback) mit WhatIf/Bestätigung, Store mit AD-Status,
 **Theme-System** (12 Paletten + 2 Stile, live umschaltbar, Menü *Ansicht*),
-**Baum-Filter** (Live-Suche nach OU-/Gruppennamen).
+**Baum-Filter** (Live-Suche nach OU-/Gruppennamen),
+**Mitglieder entfernen** (aus AD + Store, mit WhatIf/Bestätigung).
 
 Noch offen / bewusst später:
-- Entfernen einzelner Mitglieder (auch aus dem AD).
 - Konfigurierbare Feld-Map für exotische Export-Formate (Grundgerüst in
   `import-engine.psm1` vorhanden: `$script:OupFieldMap`).
 ```

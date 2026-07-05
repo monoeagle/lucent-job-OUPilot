@@ -225,4 +225,132 @@ function Add-OupGroupMembers {
     return @($Entries | ForEach-Object { _Oup-WriteResult $_ 'Error' $lastError })
 }
 
-Export-ModuleMember -Function Add-OupGroupMembers
+# ─────────────────────────────────────────────────────────────────────────────
+# Entfernen (Spiegelbild zu Add): Mitglieder aus einer Gruppe herausnehmen.
+#   status: Removed | NotMember | NotFound | Would | Simuliert | Error
+# ─────────────────────────────────────────────────────────────────────────────
+function _Oup-RemoveMembersViaModule {
+    param($GroupNode, [object[]]$Entries, [string]$Server, [switch]$WhatIf)
+
+    Import-Module ActiveDirectory -ErrorAction Stop
+
+    $common = @{}
+    if ($Server) { $common['Server'] = $Server }
+
+    # Gruppe über stabile GUID binden, bestehende Mitglieder vorab lesen.
+    $grp = Get-ADGroup -Identity $GroupNode.Guid -Properties member @common -ErrorAction Stop
+    $existing = @{}
+    foreach ($m in @($grp.member)) { $existing[([string]$m).ToLowerInvariant()] = $true }
+
+    $results = New-Object System.Collections.Generic.List[object]
+    foreach ($e in $Entries) {
+        $kind = _Oup-ClassifyIdentifier $e.identifier
+        $obj  = _Oup-ResolveViaModule -Id $e.identifier -Kind $kind -Common $common
+        if (-not $obj) { $results.Add((_Oup-WriteResult $e 'NotFound' 'Objekt im AD nicht gefunden')); continue }
+
+        $dn = [string]$obj.DistinguishedName
+        if (-not $existing.ContainsKey($dn.ToLowerInvariant())) { $results.Add((_Oup-WriteResult $e 'NotMember' $dn)); continue }
+        if ($WhatIf) { $results.Add((_Oup-WriteResult $e 'Would' $dn)); continue }
+
+        try {
+            Remove-ADGroupMember -Identity $GroupNode.Guid -Members $obj @common -Confirm:$false -ErrorAction Stop
+            [void]$existing.Remove($dn.ToLowerInvariant())
+            $results.Add((_Oup-WriteResult $e 'Removed' $dn))
+        } catch {
+            $results.Add((_Oup-WriteResult $e 'Error' $_.Exception.Message))
+        }
+    }
+    return $results.ToArray()
+}
+
+function _Oup-RemoveMembersViaAdsi {
+    param($GroupNode, [object[]]$Entries, [string]$Server, [switch]$WhatIf)
+
+    $rootPrefix = if ($Server) { "LDAP://$Server/" } else { 'LDAP://' }
+
+    $rootDse = New-Object System.DirectoryServices.DirectoryEntry("${rootPrefix}RootDSE")
+    $baseDn  = [string]$rootDse.Properties['defaultNamingContext'][0]
+
+    $group = New-Object System.DirectoryServices.DirectoryEntry("$rootPrefix$($GroupNode.DistinguishedName)")
+    $existing = @{}
+    foreach ($m in @($group.Properties['member'])) { $existing[([string]$m).ToLowerInvariant()] = $true }
+
+    $results   = New-Object System.Collections.Generic.List[object]
+    $toRemove  = New-Object System.Collections.Generic.List[string]
+
+    foreach ($e in $Entries) {
+        $kind = _Oup-ClassifyIdentifier $e.identifier
+        $dn   = _Oup-ResolveDnViaAdsi -Id $e.identifier -Kind $kind -RootPrefix $rootPrefix -BaseDn $baseDn
+        if (-not $dn) { $results.Add((_Oup-WriteResult $e 'NotFound' 'Objekt im AD nicht gefunden')); continue }
+        if (-not $existing.ContainsKey($dn.ToLowerInvariant())) { $results.Add((_Oup-WriteResult $e 'NotMember' $dn)); continue }
+        if ($WhatIf) { $results.Add((_Oup-WriteResult $e 'Would' $dn)); continue }
+
+        $toRemove.Add($dn)
+        [void]$existing.Remove($dn.ToLowerInvariant())
+        $results.Add((_Oup-WriteResult $e 'Removed' $dn))   # optimistisch; bei Commit-Fehler korrigiert
+    }
+
+    if (-not $WhatIf -and $toRemove.Count -gt 0) {
+        try {
+            foreach ($dn in $toRemove) { $group.Properties['member'].Remove($dn) }
+            $group.CommitChanges()
+        } catch {
+            $msg = $_.Exception.Message
+            foreach ($r in $results) {
+                if ($r.status -eq 'Removed') { $r.status = 'Error'; $r.message = $msg }
+            }
+        }
+    }
+    return $results.ToArray()
+}
+
+function Remove-OupGroupMembers {
+    <#
+        .SYNOPSIS  Entfernt Einträge als Mitglieder aus einer AD-Gruppe (mit Fallback).
+        .PARAMETER GroupNode  AD-Gruppenknoten (Guid, DistinguishedName).
+        .PARAMETER Entries    Einträge mit .identifier (und .type).
+        .PARAMETER Mode       Auto | Module | Adsi | Mock.
+        .PARAMETER WhatIf     Testlauf ohne Schreibvorgang.
+        .OUTPUTS   Ergebnisobjekte je Eintrag (identifier, type, status, message).
+                   status: Removed | NotMember | NotFound | Would | Simuliert | Error
+    #>
+    param(
+        [Parameter(Mandatory)]$GroupNode,
+        [Parameter(Mandatory)][object[]]$Entries,
+        [ValidateSet('Auto', 'Module', 'Adsi', 'Mock')][string]$Mode = 'Auto',
+        [string]$Server = '',
+        [switch]$WhatIf
+    )
+
+    if (-not $Entries -or $Entries.Count -eq 0) { return @() }
+
+    if ($Mode -eq 'Mock') {
+        return @($Entries | ForEach-Object { _Oup-WriteResult $_ 'Simuliert' 'Mock-Modus: kein echter AD-Schreibvorgang' })
+    }
+
+    $attempts = switch ($Mode) {
+        'Module' { @('Module') }
+        'Adsi'   { @('Adsi') }
+        default  { @('Module', 'Adsi') }
+    }
+
+    $lastError = $null
+    foreach ($a in $attempts) {
+        try {
+            switch ($a) {
+                'Module' { return _Oup-RemoveMembersViaModule -GroupNode $GroupNode -Entries $Entries -Server $Server -WhatIf:$WhatIf }
+                'Adsi'   { return _Oup-RemoveMembersViaAdsi   -GroupNode $GroupNode -Entries $Entries -Server $Server -WhatIf:$WhatIf }
+            }
+        } catch {
+            $lastError = $_.Exception.Message
+            if (Get-Command Write-OupLog -ErrorAction SilentlyContinue) {
+                Write-OupLog "AD-Schreibpfad '$a' (Entfernen) nicht verfügbar: $lastError" 'WARN'
+            }
+        }
+    }
+
+    # Beide Pfade nicht verfügbar -> alle als Fehler melden.
+    return @($Entries | ForEach-Object { _Oup-WriteResult $_ 'Error' $lastError })
+}
+
+Export-ModuleMember -Function Add-OupGroupMembers, Remove-OupGroupMembers

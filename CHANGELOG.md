@@ -1,5 +1,15 @@
 # Changelog — OUPilot
 
+## 1.3.0
+- Mitglieder entfernen: bei gewählter Gruppe im Grid markierte Rechner per
+  „Ausgewählte entfernen…" aus der AD-Gruppe (Remove-ADGroupMember → ADSI, bei
+  Mock simuliert) UND aus dem Store nehmen. Mehrfachauswahl, WhatIf-Testlauf,
+  Ja/Nein-Bestätigung vor echtem Schreiben.
+- Neue Statuswerte `Removed`/`NotMember`; aus dem Store entfernt wird nur, was
+  danach kein Mitglied mehr ist. Baum-Zähler wird korrigiert.
+- core: `Remove-OupGroupMembers` (ad-writer, Modul/ADSI/Mock) und
+  `Remove-OupImportEntries` (mapping-store, $-/case-tolerant).
+
 ## 1.2.0
 - Baum-Filter: Suchfeld über dem OU-/Gruppen-Baum filtert live nach Namen
   (Teiltext, case-insensitiv). Vorfahren von Treffern bleiben sichtbar, matcht

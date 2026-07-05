@@ -106,6 +106,8 @@ $script:OupMainXaml = @'
         </StackPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
           <Button x:Name="BtnImport" Content="In gewählte Gruppe importieren..." Padding="10,5" IsEnabled="False"/>
+          <Button x:Name="BtnRemove" Content="Ausgewählte entfernen..." Padding="10,5" IsEnabled="False"
+                  ToolTip="Markierte Zeilen aus der gewählten Gruppe entfernen (AD + Store)"/>
           <CheckBox x:Name="ChkWhatIf" Content="Nur Testlauf (WhatIf)" VerticalAlignment="Center" Margin="12,0,0,0"/>
         </StackPanel>
 
@@ -336,6 +338,85 @@ function _Oup-OnNodeSelected {
         $script:oupImportItems.Clear()
         _Oup-SetStatus $label
     }
+
+    _Oup-UpdateRemoveEnabled
+}
+
+function _Oup-UpdateRemoveEnabled {
+    <#  .SYNOPSIS  Aktiviert „Ausgewählte entfernen" nur, wenn eine Gruppe gewählt
+                   ist und im Grid mindestens eine Zeile markiert wurde.  #>
+    if (-not $script:oupWindow) { return }
+    $btn  = $script:oupWindow.FindName('BtnRemove')
+    $grid = $script:oupWindow.FindName('GridImports')
+    if (-not $btn -or -not $grid) { return }
+    $btn.IsEnabled = ($script:oupImportMode -eq 'Group' -and
+                      $script:oupSelectedNode -and $script:oupSelectedNode.NodeType -eq 'Group' -and
+                      $grid.SelectedItems.Count -gt 0)
+}
+
+function _Oup-OnRemoveMembers {
+    <#
+        .SYNOPSIS  Entfernt die im Grid markierten Rechner aus der gewählten
+                   Gruppe — aus dem AD (Modul/ADSI/Mock) und aus dem Store.
+        .DESCRIPTION  Nur im Gruppen-Modus. Destruktiv -> Bestätigung (außer im
+                      Testlauf). Persistiert nur, was danach kein Mitglied mehr
+                      ist (Removed/NotMember/Simuliert).
+    #>
+    if (-not $script:oupSelectedNode -or $script:oupSelectedNode.NodeType -ne 'Group') {
+        _Oup-SetStatus 'Zum Entfernen bitte eine Gruppe wählen.' 'WARN'; return
+    }
+    $group = $script:oupSelectedNode
+    $grid  = $script:oupWindow.FindName('GridImports')
+    $sel   = @($grid.SelectedItems)
+    if ($sel.Count -eq 0) { _Oup-SetStatus 'Keine Zeile markiert.' 'WARN'; return }
+
+    # Markierte Zeilen -> Einträge (identifier/type) für den AD-Aufruf.
+    $entries = @($sel | ForEach-Object {
+        [PSCustomObject]@{ identifier = [string]$_.identifier; type = [string]$_.type }
+    } | Where-Object { $_.identifier })
+    if ($entries.Count -eq 0) { _Oup-SetStatus 'Markierte Zeilen ohne Identifier.' 'WARN'; return }
+
+    $whatIf = [bool]$script:oupWindow.FindName('ChkWhatIf').IsChecked
+    $isMock = ($script:oupAdModeUsed -eq 'Mock')
+
+    # Bestätigung — Entfernen ist ein wirksamer, destruktiver Eingriff.
+    if (-not $whatIf) {
+        $head = if ($isMock) { "ACHTUNG: Quelle ist Mock (keine Domäne) — es wird nur simuliert.`n`n" } else { '' }
+        $q = "$head$($entries.Count) Mitglied(er) aus der Gruppe`n'$($group.Name)'`nENTFERNEN?"
+        $ans = [System.Windows.MessageBox]::Show($script:oupWindow, $q, 'Mitglieder entfernen',
+                   [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        if ($ans -ne [System.Windows.MessageBoxResult]::Yes) { _Oup-SetStatus 'Entfernen abgebrochen.'; return }
+    }
+
+    $adMode = if ($isMock) { 'Mock' } else { 'Auto' }
+    $tag    = if ($whatIf) { "$adMode/Testlauf" } else { $adMode }
+    _Oup-SetStatus "Entferne $($entries.Count) Mitglied(er) aus '$($group.Name)' ($tag)..."
+    $results = @(Remove-OupGroupMembers -GroupNode $group -Entries $entries `
+                    -Mode $adMode -Server $script:oupSettings.AdServer -WhatIf:$whatIf)
+
+    # Ergebnis zählen.
+    $counts = @{}
+    foreach ($r in $results) {
+        $counts[$r.status] = 1 + $(if ($counts.ContainsKey($r.status)) { $counts[$r.status] } else { 0 })
+    }
+    $summary = (($counts.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ', ')
+
+    $purged = 0
+    if (-not $whatIf) {
+        # Aus dem Store nehmen, was tatsächlich kein Mitglied mehr ist.
+        $ids = @($results | Where-Object { $_.status -in @('Removed', 'NotMember', 'Simuliert') } | ForEach-Object { $_.identifier })
+        if ($ids.Count -gt 0) {
+            $purged = (Remove-OupImportEntries -Store $script:oupStore -GroupNode $group -Identifiers $ids)
+        }
+        Save-OupMapping -Store $script:oupStore -Path $script:oupMappingPath
+        _Oup-OnNodeSelected -Node $group        # Grid aus Store neu laden
+        _Oup-UpdateGroupHeader -Node $group     # Zähler im Baum korrigieren
+    }
+
+    $prefix = if ($whatIf) { 'Testlauf (Entfernen)' } else { 'Entfernt' }
+    $tail   = if ($whatIf) { '' } else { ", $purged aus Store entfernt" }
+    $lvl    = if ($counts.ContainsKey('Error') -or $counts.ContainsKey('NotFound')) { 'WARN' } else { 'INFO' }
+    _Oup-SetStatus "${prefix}: $summary ($($entries.Count) gewählt$tail)." $lvl
 }
 
 function _Oup-OnImport {
@@ -1008,6 +1089,9 @@ function Show-OupMainWindow {
         if ($script:oupImportMode -eq 'SubOU') { _Oup-OnImportSubOU } else { _Oup-OnImport }
     })
     $script:oupWindow.FindName('BtnImportAssign').Add_Click({ _Oup-OnImportAssign })
+    $script:oupWindow.FindName('BtnRemove').Add_Click({ _Oup-OnRemoveMembers })
+    # Grid-Auswahl steuert die Verfügbarkeit von „Ausgewählte entfernen".
+    $script:oupWindow.FindName('GridImports').Add_SelectionChanged({ _Oup-UpdateRemoveEnabled })
 
     # Baum-Filter: bei jeder Eingabe neu zeichnen; ✕-Button leert das Feld
     # (das TextChanged-Event zeichnet dann den vollen Baum).
@@ -1020,7 +1104,7 @@ function Show-OupMainWindow {
     $script:oupWindow.FindName('MenuClientLookup').Add_Click({ _Oup-OnClientLookup })
     $script:oupWindow.FindName('MenuInfo').Add_Click({
         if (Get-Command Show-OupAboutDialog -ErrorAction SilentlyContinue) {
-            Show-OupAboutDialog -Version '1.2.0' -Settings $script:oupSettings -Owner $script:oupWindow
+            Show-OupAboutDialog -Version '1.3.0' -Settings $script:oupSettings -Owner $script:oupWindow
         }
     })
 

@@ -118,6 +118,36 @@ function Add-OupImportEntries {
     return $added.Count
 }
 
+function Remove-OupImportEntries {
+    <#
+        .SYNOPSIS  Entfernt Importeinträge aus dem Gruppendatensatz anhand ihrer
+                   Identifier (case-insensitiv, tolerant gegenüber dem Computer-
+                   Suffix '$', konsistent zu Get-OupClientMemberships).
+        .OUTPUTS   Anzahl tatsächlich entfernter Einträge.
+    #>
+    param(
+        [Parameter(Mandatory)]$Store,
+        [Parameter(Mandatory)]$GroupNode,
+        [Parameter(Mandatory)][string[]]$Identifiers
+    )
+
+    $guid = $GroupNode.Guid
+    if (-not $Store.groups.Contains($guid)) { return 0 }
+    $rec = $Store.groups[$guid]
+
+    $needles = @{}
+    foreach ($id in $Identifiers) {
+        if (-not $id) { continue }
+        $bare = ([string]$id).Trim().TrimEnd('$')
+        foreach ($n in @($id, $bare, ($bare + '$'))) { $needles[$n.ToLowerInvariant()] = $true }
+    }
+    if ($needles.Count -eq 0) { return 0 }
+
+    $before      = @($rec.imports).Count
+    $rec.imports = @(@($rec.imports) | Where-Object { -not $needles.ContainsKey("$($_.identifier)".ToLowerInvariant()) })
+    return ($before - @($rec.imports).Count)
+}
+
 function Get-OupClientMemberships {
     <#
         .SYNOPSIS  Liefert alle Gruppen, in denen ein Rechner laut Store steckt.
@@ -161,4 +191,4 @@ function Get-OupClientMemberships {
 }
 
 Export-ModuleMember -Function Get-OupMappingPath, Import-OupMapping, Save-OupMapping, `
-    Get-OupGroupRecord, Add-OupImportEntries, Get-OupClientMemberships
+    Get-OupGroupRecord, Add-OupImportEntries, Remove-OupImportEntries, Get-OupClientMemberships
