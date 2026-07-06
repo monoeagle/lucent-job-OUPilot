@@ -984,12 +984,15 @@ function New-OupDsmImportPlan {
                 continue
             }
             if (-not $buckets.ContainsKey($node.Guid)) {
-                $buckets[$node.Guid] = [PSCustomObject]@{ node = $node; entries = (New-Object System.Collections.Generic.List[object]) }
+                # ArrayList statt List[object]: bietet ebenfalls .ToArray() (Task-6-UI),
+                # umgeht aber die pwsh-7.4.6/.NET-8.0.10-Regression, bei der
+                # @(<generische List>) mit "Argument types do not match" scheitert.
+                $buckets[$node.Guid] = [PSCustomObject]@{ node = $node; entries = (New-Object System.Collections.ArrayList) }
             }
             foreach ($m in @($fr.Members)) {
                 $copy = $m.PSObject.Copy()
                 $copy | Add-Member -NotePropertyName targetGroup -NotePropertyValue $node.Name -Force
-                $buckets[$node.Guid].entries.Add($copy)
+                [void]$buckets[$node.Guid].entries.Add($copy)
                 $memberships++
             }
         }
