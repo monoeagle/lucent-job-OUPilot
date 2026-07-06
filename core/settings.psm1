@@ -18,6 +18,10 @@ function Get-OupDefaultSettings {
         # (leer = <AppRoot>\fieldmap.json; fehlt die Datei, gelten nur die
         # eingebauten Feldnamen). Siehe samples\fieldmap.example.json.
         FieldMapPath  = ''
+        # Pfad zur DSM-Mapping-Datei (DSM-Paketname -> AD-App-Name) für den
+        # DSM-Export-Import (leer = <AppRoot>\dsm-mapping.json; fehlt die Datei,
+        # ist kein DSM-Import möglich). Vorlage: samples\dsm-mapping.example.json.
+        DsmMappingPath = ''
         # UI — Theme-System (Muster wie CodeSigningCommander):
         #   UiStyle   = Geometrie 'Sharp' (scharfe Ecken) | 'Soft' (3px, luftiger)
         #   UiPalette = Farbschema (Gray, Slate, Blue, Ocean, Teal, Mint, Sage,

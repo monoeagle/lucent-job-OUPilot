@@ -27,7 +27,7 @@ $script:oupNodeToItem   = $null   # Gruppen-GUID -> TreeViewItem (Header-Updates
 $script:oupLookupWin    = $null   # Rechner-Übersicht: Fenster
 $script:oupLookupItems  = $null   # Rechner-Übersicht: Grid-Items
 $script:oupLookupLocs   = $null   # Rechner-Übersicht: Standort-Map
-$script:oupImportMode   = 'Group' # 'Group' (Gruppe gewählt) | 'SubOU' (Unterstandort)
+$script:oupImportMode   = 'Group' # 'Group' (Gruppe) | 'SubOU' (Unterstandort) | 'Standort' (DSM-Import)
 $script:oupPaletteItems = $null   # Ansicht-Menü: Palette-Name -> MenuItem (Häkchen)
 $script:oupStyleItems   = $null   # Ansicht-Menü: Stil-Name    -> MenuItem (Häkchen)
 $script:oupFilter       = ''      # aktiver Baum-Filter (Teiltext, case-insensitiv)
@@ -294,6 +294,20 @@ function _Oup-RdnValue {
     return (($Dn -split ',')[0] -replace '^[^=]+=', '')
 }
 
+function _Oup-HasGroupBelow {
+    <#  .SYNOPSIS  True, wenn irgendwo unterhalb des Knotens eine Gruppe liegt
+                   (Kennzeichen einer Standort-OU mit App-Sub-OUs).  #>
+    param($Node)
+    $stack = New-Object System.Collections.Stack
+    foreach ($c in @($Node.Children)) { $stack.Push($c) }
+    while ($stack.Count -gt 0) {
+        $n = $stack.Pop()
+        if ($n.NodeType -eq 'Group') { return $true }
+        foreach ($c in @($n.Children)) { $stack.Push($c) }
+    }
+    return $false
+}
+
 function _Oup-OnNodeSelected {
     param($Node)
     $script:oupSelectedNode = $Node
@@ -327,6 +341,18 @@ function _Oup-OnNodeSelected {
         $script:oupWindow.FindName('TxtGroupDn').Text   = $Node.DistinguishedName
         $script:oupImportItems.Clear()
         _Oup-SetStatus "SubOU gewählt: $($Node.Name) ($grpCount Gruppen) — bereit für Geräte-Import."
+    }
+    elseif ($Node -and $Node.NodeType -eq 'OU' -and (_Oup-HasGroupBelow $Node)) {
+        # OU ohne direkte Gruppen, aber mit Gruppen in Sub-OUs -> Standort-OU
+        # (reales Muster: Standort -> je Anwendung eine Sub-OU) -> DSM-Import.
+        $script:oupImportMode = 'Standort'
+        $btn.Content   = "DSM-Export in Standort '$($Node.Name)' importieren..."
+        $btn.IsEnabled = $true
+        $script:oupWindow.FindName('TxtGroupName').Text = "Standort: $($Node.Name)"
+        $script:oupWindow.FindName('TxtGroupGuid').Text = 'DSM-Gruppendateien (<RBSSt>_<Gruppe>.txt)'
+        $script:oupWindow.FindName('TxtGroupDn').Text   = $Node.DistinguishedName
+        $script:oupImportItems.Clear()
+        _Oup-SetStatus "Standort gewählt: $($Node.Name) — bereit für DSM-Import."
     }
     else {
         $script:oupImportMode = 'Group'
@@ -689,6 +715,139 @@ function _Oup-WriteConflictReport {
         return $path
     } catch {
         Write-OupLog "Konflikt-Report konnte nicht geschrieben werden: $($_.Exception.Message)" 'ERROR'
+        return $null
+    }
+}
+
+function _Oup-OnImportDsm {
+    <#
+        .SYNOPSIS  DSM-Import in den gewählten Standort: eine Datei je DSM-Gruppe
+                   (JSON nach int_jsonStructure.md). Jedes Mitglied wird für jede
+                   relevante Policy-Zuweisung in <RBSSt>-<App>-<Endung> einsortiert.
+        .DESCRIPTION  Deny-/deaktivierte/abgelaufene Policies, fremde RBSSt,
+                      fehlende Mappings und fehlende Zielgruppen werden übersprungen
+                      und im CSV-Report (Logs\dsm-report-*.csv) dokumentiert.
+    #>
+    $ou = $script:oupSelectedNode
+    if (-not $ou -or $ou.NodeType -ne 'OU') { _Oup-SetStatus 'Bitte einen Standort wählen.' 'WARN'; return }
+
+    # Mapping-Datei ist Pflicht — ohne sie ist keine Zuordnung möglich.
+    $mapPath = Get-OupDsmMappingPath -ConfiguredPath $script:oupSettings.DsmMappingPath -AppRoot $script:oupAppRoot
+    $mapping = Import-OupDsmMapping -Path $mapPath
+    if (-not $mapping -or $mapping.Count -eq 0) {
+        $m = "Mapping-Datei fehlt, ist leer oder unlesbar:`n$mapPath`n`nOhne DSM->AD-Mapping ist kein DSM-Import möglich.`nVorlage: samples\dsm-mapping.example.json"
+        [void][System.Windows.MessageBox]::Show($script:oupWindow, $m, 'DSM-Import', 'OK', 'Warning')
+        _Oup-SetStatus 'DSM-Import: Mapping-Datei fehlt.' 'WARN'
+        return
+    }
+
+    $dlg = New-Object Microsoft.Win32.OpenFileDialog
+    $dlg.Filter      = 'DSM-Export (*.txt;*.json)|*.txt;*.json|Alle Dateien (*.*)|*.*'
+    $dlg.Multiselect = $true
+    $dlg.Title       = "DSM-Export(e) für Standort '$($ou.Name)' wählen"
+    if ($script:oupSettings.LastImportDir -and (Test-Path $script:oupSettings.LastImportDir)) {
+        $dlg.InitialDirectory = $script:oupSettings.LastImportDir
+    }
+    if (-not $dlg.ShowDialog()) { return }
+
+    # 1) Plan bauen (Parsen, Gates, Filter, Mapping, Gruppen-Lookup — UI-frei im Modul).
+    $index = Get-OupGroupIndex -Roots @($ou)
+    $plan  = New-OupDsmImportPlan -Paths $dlg.FileNames -Mapping $mapping -GroupIndex $index -StandortName $ou.Name
+
+    if ($plan.MembershipCount -eq 0) {
+        $reportPath = $null
+        if (@($plan.ReportRows).Count -gt 0) { $reportPath = _Oup-WriteDsmReport -Rows @($plan.ReportRows) -AppRoot $script:oupAppRoot }
+        $m = "Keine einsortierbaren Mitgliedschaften gefunden ($($plan.FilesRejected) von $($plan.Files) Datei(en) abgelehnt)."
+        if ($reportPath) { $m += "`nDetails: $reportPath" }
+        [void][System.Windows.MessageBox]::Show($script:oupWindow, $m, 'DSM-Import', 'OK', 'Warning')
+        _Oup-SetStatus 'DSM-Import: nichts einzusortieren.' 'WARN'
+        return
+    }
+
+    $whatIf = [bool]$script:oupWindow.FindName('ChkWhatIf').IsChecked
+    $isMock = ($script:oupAdModeUsed -eq 'Mock')
+
+    # 2) Bestätigung.
+    if (-not $whatIf) {
+        $head = if ($isMock) { "ACHTUNG: Quelle ist Mock (keine Domäne) — es wird nur simuliert.`n`n" } else { '' }
+        $extra = ''
+        if ($plan.FilesRejected -gt 0)          { $extra += "`n$($plan.FilesRejected) Datei(en) abgelehnt." }
+        if (@($plan.MissingGroups).Count -gt 0) { $extra += "`n$(@($plan.MissingGroups).Count) Zielgruppe(n) fehlen im AD." }
+        if (@($plan.ReportRows).Count -gt 0)    { $extra += "`nDetails im Report (Logs\dsm-report-*.csv)." }
+        $q = "$head$($plan.ComputerCount) Rechner in Standort '$($ou.Name)' einsortieren`n($($plan.MembershipCount) Mitgliedschaften in $($plan.GroupCount) Gruppen)?$extra"
+        $ans = [System.Windows.MessageBox]::Show($script:oupWindow, $q, 'DSM-Import',
+                   [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        if ($ans -ne [System.Windows.MessageBoxResult]::Yes) { _Oup-SetStatus 'DSM-Import abgebrochen.'; return }
+    }
+
+    # 3) Schreiben je Zielgruppe (Muster wie Geräte-Import).
+    $adMode        = if ($isMock) { 'Mock' } else { 'Auto' }
+    $counts        = @{}
+    $allResults    = New-Object System.Collections.Generic.List[object]
+    $stored        = 0
+    $groupsTouched = 0
+    _Oup-SetStatus "DSM-Import: $($plan.ComputerCount) Rechner in '$($ou.Name)' ($adMode$(if($whatIf){'/Testlauf'}))..."
+
+    foreach ($b in $plan.Buckets.Values) {
+        $entries = $b.entries.ToArray()
+        $results = @(Add-OupGroupMembers -GroupNode $b.node -Entries $entries `
+                        -Mode $adMode -Server $script:oupSettings.AdServer -WhatIf:$whatIf)
+        $byId = @{}; foreach ($x in $results) { if ($x.identifier) { $byId[$x.identifier] = $x.status } }
+        foreach ($e in $entries) {
+            $st = if ($byId.ContainsKey($e.identifier)) { $byId[$e.identifier] } else { 'Unbekannt' }
+            _Oup-SetEntryField $e 'adStatus' $st
+            [void]$allResults.Add($e)
+        }
+        foreach ($x in $results) { $counts[$x.status] = 1 + $(if ($counts.ContainsKey($x.status)) { $counts[$x.status] } else { 0 }) }
+        $groupsTouched++
+        if (-not $whatIf) {
+            $persist = @($entries | Where-Object { $_.adStatus -in @('Added', 'AlreadyMember', 'Simuliert') })
+            if ($persist.Count -gt 0) { $stored += (Add-OupImportEntries -Store $script:oupStore -GroupNode $b.node -Entries $persist) }
+        }
+    }
+    if (-not $whatIf) { Save-OupMapping -Store $script:oupStore -Path $script:oupMappingPath }
+
+    # 4) Report schreiben (immer, wenn Zeilen vorhanden — auch bei Erfolg).
+    $reportPath = $null
+    if (@($plan.ReportRows).Count -gt 0) { $reportPath = _Oup-WriteDsmReport -Rows @($plan.ReportRows) -AppRoot $script:oupAppRoot }
+
+    # 5) Einstellungen + Anzeige.
+    $script:oupSettings.LastImportDir = Split-Path -Parent $dlg.FileNames[0]
+    Export-OupSettings -Settings $script:oupSettings -ConfigPath $script:oupConfigPath
+    $script:oupImportItems.Clear()
+    foreach ($e in $allResults) { $script:oupImportItems.Add([PSCustomObject]$e) }
+    if (-not $whatIf) { foreach ($b in $plan.Buckets.Values) { _Oup-UpdateGroupHeader -Node $b.node } }
+
+    # 6) Ergebnis-Dialog.
+    $summary = (($counts.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ', ')
+    $prefix  = if ($whatIf) { 'Testlauf (DSM)' } else { 'DSM-Import' }
+    $lines = @("Standort '$($ou.Name)': $($plan.ComputerCount) Rechner, $groupsTouched Zielgruppen, $($plan.MembershipCount) Mitgliedschaften.", "Status: $summary")
+    if (-not $whatIf -and $stored -gt 0) { $lines += "$stored neu im Store gespeichert." }
+    if ($plan.FilesRejected -gt 0) { $lines += "Abgelehnte Dateien: $($plan.FilesRejected) von $($plan.Files)." }
+    if (@($plan.MissingGroups).Count -gt 0) {
+        $lines += "Fehlende Zielgruppen ($(@($plan.MissingGroups).Count)): " + ((@($plan.MissingGroups) | Select-Object -First 12) -join ', ')
+    }
+    if ($reportPath) { $lines += "Report: $reportPath" }
+    [void][System.Windows.MessageBox]::Show($script:oupWindow, ($lines -join "`n"), $prefix,
+              [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+
+    $lvl = if (($plan.FilesRejected -gt 0) -or (@($plan.MissingGroups).Count -gt 0) -or $counts.ContainsKey('Error')) { 'WARN' } else { 'INFO' }
+    _Oup-SetStatus "${prefix}: $($lines[0]) Status: $summary" $lvl
+}
+
+function _Oup-WriteDsmReport {
+    <#  .SYNOPSIS  Schreibt die DSM-Import-Report-Zeilen (übersprungene Dateien/
+                   Mitglieder/Policies/Gruppen inkl. Grund) als CSV nach Logs\.  #>
+    param([object[]]$Rows, [string]$AppRoot)
+    $dir = Join-Path $AppRoot 'Logs'
+    if (-not (Test-Path $dir)) { [void](New-Item -ItemType Directory -Path $dir -Force) }
+    $path = Join-Path $dir ("dsm-report-{0}.csv" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    try {
+        $Rows | Export-Csv -Path $path -NoTypeInformation -Encoding UTF8
+        Write-OupLog "DSM-Import-Report geschrieben: $path ($(@($Rows).Count) Zeile(n))" 'INFO'
+        return $path
+    } catch {
+        Write-OupLog "DSM-Report konnte nicht geschrieben werden: $($_.Exception.Message)" 'ERROR'
         return $null
     }
 }
@@ -1105,7 +1264,9 @@ function Show-OupMainWindow {
     })
     $script:oupWindow.FindName('BtnReload').Add_Click({ _Oup-LoadTree })
     $script:oupWindow.FindName('BtnImport').Add_Click({
-        if ($script:oupImportMode -eq 'SubOU') { _Oup-OnImportSubOU } else { _Oup-OnImport }
+        if     ($script:oupImportMode -eq 'SubOU')    { _Oup-OnImportSubOU }
+        elseif ($script:oupImportMode -eq 'Standort') { _Oup-OnImportDsm }
+        else                                          { _Oup-OnImport }
     })
     $script:oupWindow.FindName('BtnImportAssign').Add_Click({ _Oup-OnImportAssign })
     $script:oupWindow.FindName('BtnRemove').Add_Click({ _Oup-OnRemoveMembers })
