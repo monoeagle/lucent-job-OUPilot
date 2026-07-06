@@ -1,38 +1,53 @@
-graph LR
-  ROOT["OUPilot · v1.4.0"]:::root
+flowchart TB
+  classDef done fill:#1f7a4d,color:#fff,stroke:#12563a,stroke-width:1px
+  classDef plan fill:#1f5d99,color:#fff,stroke:#123f66,stroke-width:1px
 
-  ROOT --> AP1["AP-1 · AD-Kern"]:::ap
-  ROOT --> AP2["AP-2 · Baum & Auswahl"]:::ap
-  ROOT --> AP3["AP-3 · Import-Engine"]:::ap
-  ROOT --> AP4["AP-4 · Persistenz"]:::ap
-  ROOT --> AP5["AP-5 · Darstellung"]:::ap
-  ROOT --> AP6["AP-6 · Betrieb & Doku"]:::ap
+  subgraph AP1["AP-1 · AD-Kern"]
+    direction TB
+    A1a["AD-Lesen — Modul/ADSI/Mock"]:::done
+    A1b["AD-Schreiben — hinzufügen"]:::done
+    A1c["Mitglieder entfernen"]:::done
+    A1d["objectGUID-Auflösung"]:::done
+    A1a --> A1b --> A1c
+  end
 
-  AP1 --> A1a["AD-Lesen — Modul / ADSI / Mock"]:::done
-  AP1 --> A1b["AD-Schreiben — hinzufügen"]:::done
-  AP1 --> A1c["Mitglieder entfernen"]:::done
-  AP1 --> A1d["objectGUID-Auflösung"]:::done
+  subgraph AP2["AP-2 · Baum & Auswahl"]
+    direction TB
+    A2a["OU-/Gruppen-Baum"]:::done
+    A2b["Baum-Filter"]:::done
+    A2c["Rechner-Übersicht"]:::done
+    A2a --> A2b
+  end
 
-  AP2 --> A2a["OU-/Gruppen-Baum"]:::done
-  AP2 --> A2b["Baum-Filter"]:::done
-  AP2 --> A2c["Rechner-Übersicht"]:::done
+  subgraph AP3["AP-3 · Import-Engine"]
+    direction TB
+    A3a["3 Import-Wege"]:::done
+    A3b["Standort-Konflikt-Skip"]:::done
+    A3c["Feld-Map"]:::done
+    A3a --> A3b
+  end
 
-  AP3 --> A3a["3 Import-Wege"]:::done
-  AP3 --> A3b["Standort-Konflikt-Skip"]:::done
-  AP3 --> A3c["Feld-Map"]:::done
+  subgraph AP4["AP-4 · Persistenz"]
+    direction TB
+    A4a["GUID-Mapping-Store"]:::done
+    A4b["settings.json"]:::done
+  end
 
-  AP4 --> A4a["GUID-Mapping-Store"]:::done
-  AP4 --> A4b["settings.json"]:::done
+  subgraph AP5["AP-5 · Darstellung"]
+    direction TB
+    A5a["Theme — 12 Paletten / 2 Stile"]:::done
+    A5b["Info-Dialog"]:::done
+  end
 
-  AP5 --> A5a["Theme — 12 Paletten / 2 Stile"]:::done
-  AP5 --> A5b["Info-Dialog"]:::done
+  subgraph AP6["AP-6 · Betrieb & Doku"]
+    direction TB
+    A6a["Mock-Verifikation"]:::done
+    A6b["UTF-8-BOM-Workflow"]:::done
+    A6c["Doku-Site (zensical)"]:::done
+    A6d["Domänen-Testclient-Gegentest"]:::plan
+  end
 
-  AP6 --> A6a["Mock-Verifikation"]:::done
-  AP6 --> A6b["UTF-8-BOM-Workflow"]:::done
-  AP6 --> A6c["Doku-Site (zensical)"]:::done
-  AP6 --> A6d["Domänen-Testclient-Gegentest"]:::plan
-
-  classDef root fill:#243044,stroke:#141c28,color:#ffffff,font-weight:bold;
-  classDef ap   fill:#3f5878,stroke:#26374d,color:#ffffff,font-weight:bold;
-  classDef done fill:#1f7a4d,stroke:#12563a,color:#ffffff;
-  classDef plan fill:#1f5d99,stroke:#123f66,color:#ffffff;
+  AP1 --> AP3
+  AP3 --> AP4
+  AP2 --> AP5
+  AP4 --> AP6
