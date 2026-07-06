@@ -5,6 +5,7 @@ WPF-Anwendung (Windows PowerShell 5.1) zum Hinzufügen von **Rechnern** zu
 *CodeSigningCommander* (XAML als Here-String, Module je Komponente, JSON-State).
 
 **Aktuelle Version:** [v1.4.0](https://github.com/monoeagle/lucent-job-OUPilot/releases/latest)
+· [📖 Doku](https://monoeagle.github.io/lucent-job-OUPilot/)
 · [alle Releases](https://github.com/monoeagle/lucent-job-OUPilot/releases)
 · [Changelog](CHANGELOG.md)
 
@@ -49,7 +50,9 @@ Fertige App als Zip: **[neuestes Release](https://github.com/monoeagle/lucent-jo
 
 ## Dokumentation
 
-Ausführliche Doku als lokale Website (**zensical/Material**, Layout identisch zu den
+**Online:** <https://monoeagle.github.io/lucent-job-OUPilot/>
+
+Ausführliche Doku als Website (**zensical/Material**, Layout identisch zu den
 anderen Lucent-Projekten — Icon-Rail-Navigation, Aktivitäts-Heatmap, Diagramme):
 
 ```powershell
