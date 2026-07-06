@@ -89,6 +89,18 @@ Assert ($g -contains 'Policy noch nicht aktiv') 'Alt: Zukunfts-Start im Report'
 Assert ($g -contains 'Kein Mapping fuer DSM-Software') 'Alt: fehlendes Mapping im Report'
 Assert (@($res.ReportRows).Count -eq 6) 'Alt: genau 6 Filter-Zeilen'
 
+# ── Mock: DSM-Standort RBSSt01 ──────────────────────────────────────────────
+Import-Module (Join-Path $root 'core/ad-reader.psm1') -Force -DisableNameChecking
+$tree    = Get-OupAdTree -Mode Mock
+$rbsst01 = @($tree.Roots[0].Children | Where-Object { $_.Name -eq 'RBSSt01' }) | Select-Object -First 1
+Assert ($null -ne $rbsst01) 'Mock: Standort RBSSt01 vorhanden'
+Assert (@($rbsst01.Children | Where-Object { $_.NodeType -eq 'Group' }).Count -eq 0) 'Mock: RBSSt01 ohne direkte Gruppen (Standort-Modus)'
+$index = Get-OupGroupIndex -Roots @($rbsst01)
+Assert ($index.ByName.Count -eq 7) 'Mock: 7 Gruppen unter RBSSt01'
+Assert ($index.ByName.ContainsKey('rbsst01-office-policy-available')) 'Mock: Available-Gruppe vorhanden'
+Assert ($index.ByName.ContainsKey('rbsst01-clientbasis-policy')) 'Mock: ClientBasis-Gruppe vorhanden'
+Assert (-not $index.ByName.ContainsKey('rbsst01-vlc-policy')) 'Mock: VLC-Gruppe fehlt absichtlich'
+
 # ── Ergebnis ────────────────────────────────────────────────────────────────
 Write-Host ''
 if ($script:fails -gt 0) { Write-Host "$script:fails Assertion(s) fehlgeschlagen." -ForegroundColor Red; exit 1 }

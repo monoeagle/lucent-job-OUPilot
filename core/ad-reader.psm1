@@ -223,6 +223,31 @@ function _Oup-ReadMock {
         $siteIdx++
     }
 
+    # DSM-Fall: Standort-OU nach realem Muster (RBSSt = OU-Name; je Anwendung
+    # eine Sub-OU mit <RBSSt>-<App>-<Endung>-Gruppen). VLC fehlt absichtlich,
+    # damit der 'Gruppe fehlt'-Report ohne Domäne reproduzierbar ist.
+    $rbsst   = 'RBSSt01'
+    $rbsstDn = "OU=$rbsst,$rootDn"
+    $flat.Add( (New-OupTreeNode 'OU' $rbsst (_Oup-DnGuid $rbsstDn) '' $rbsstDn (_Oup-ParentDn $rbsstDn)) )
+    $dsmApps = [ordered]@{
+        '7Zip'        = @('Policy', 'Job')
+        'Firefox'     = @('Policy', 'Job')
+        'ClientBasis' = @('Policy')
+        'Office'      = @('Policy', 'Policy-Available')
+    }
+    $rid = 9000
+    foreach ($app in $dsmApps.Keys) {
+        $appDn = "OU=$app,$rbsstDn"
+        $flat.Add( (New-OupTreeNode 'OU' $app (_Oup-DnGuid $appDn) '' $appDn (_Oup-ParentDn $appDn)) )
+        foreach ($t in $dsmApps[$app]) {
+            $gName = "$rbsst-$app-$t"
+            $gDn   = "CN=$gName,$appDn"
+            $sid   = "S-1-5-21-1234567890-1234567890-1234567890-$rid"
+            $flat.Add( (New-OupTreeNode 'Group' $gName (_Oup-DnGuid $gDn) $sid $gDn (_Oup-ParentDn $gDn) 0) )
+            $rid++
+        }
+    }
+
     return ,(_Oup-BuildHierarchy -Flat $flat.ToArray())
 }
 
