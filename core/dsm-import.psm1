@@ -98,4 +98,137 @@ function Read-OupDsmGroupFile {
     }
 }
 
-Export-ModuleMember -Function Read-OupDsmGroupFile
+# ─────────────────────────────────────────────────────────────────────────────
+# Namensbrücke: dsm-mapping.json (App-Root) — DSM-Paketname -> AD-App-Name.
+# Ohne Eintrag wird eine Software NICHT einsortiert (Report), kein Fuzzy-Match.
+# ─────────────────────────────────────────────────────────────────────────────
+function Get-OupDsmMappingPath {
+    <#  .SYNOPSIS  Effektiver Pfad zur DSM-Mapping-Datei (Default: <AppRoot>\dsm-mapping.json).  #>
+    param([string]$ConfiguredPath, [Parameter(Mandatory)][string]$AppRoot)
+    if ($ConfiguredPath) { return $ConfiguredPath }
+    return "$AppRoot\dsm-mapping.json"
+}
+
+function Import-OupDsmMapping {
+    <#  .SYNOPSIS  Lädt dsm-mapping.json als Hashtable (Key lowercase) — $null, wenn fehlt/unlesbar.  #>
+    param([Parameter(Mandatory)][string]$Path)
+    if (-not (Test-Path $Path)) { return $null }
+    try {
+        $cfg = Get-Content $Path -Raw | ConvertFrom-Json
+    } catch {
+        if (Get-Command Write-OupLog -ErrorAction SilentlyContinue) {
+            Write-OupLog "dsm-mapping.json unlesbar: $($_.Exception.Message)" 'WARN'
+        }
+        return $null
+    }
+    $map = @{}
+    if ($cfg.Software) {
+        foreach ($p in $cfg.Software.PSObject.Properties) {
+            if ($p.Name -and $p.Value) { $map[$p.Name.ToLowerInvariant()] = "$($p.Value)" }
+        }
+    }
+    return $map
+}
+
+function _Oup-DsmDate {
+    <#  .SYNOPSIS  Parst einen Export-Zeitstempel (mit Offset/Z) — $null bei leer/unlesbar.  #>
+    param($Value)
+    if ($null -eq $Value -or "$Value" -eq '') { return $null }
+    try { return [DateTimeOffset]::Parse("$Value", [System.Globalization.CultureInfo]::InvariantCulture) }
+    catch { return $null }
+}
+
+function Resolve-OupDsmAssignments {
+    <#
+        .SYNOPSIS  Filtert die Policy-Zuweisungen einer Datei und bildet die
+                   Zielgruppen-Namen <RBSSt>-<App>-<Endung>.
+        .DESCRIPTION  Filterreihenfolge (Spec, erster Treffer -> Report-Zeile):
+                      Deny -> deaktiviert -> NoDeployment -> abgelaufen ->
+                      noch nicht aktiv -> unbekannter Modus -> unbekannter
+                      Policy-Typ -> fehlendes Mapping. Danach Dedupe je Zielname.
+        .OUTPUTS   PSCustomObject @{ Targets; ReportRows }
+    #>
+    param(
+        [Parameter(Mandatory)]$FileResult,
+        [Parameter(Mandatory)][hashtable]$Mapping,
+        [Nullable[DateTimeOffset]]$Now
+    )
+    if ($null -eq $Now) { $Now = [DateTimeOffset]::Now }
+
+    $file    = $FileResult.File
+    $rows    = New-Object System.Collections.Generic.List[object]
+    $targets = [ordered]@{}    # Zielname lowercase -> Target (Dedupe NACH Filterung)
+
+    foreach ($pa in @($FileResult.Assignments)) {
+        if (-not $pa -or -not $pa.Policy) { continue }
+        $p    = $pa.Policy
+        $sw   = $pa.Software
+        $pn   = "$($p.PolicyName)"
+        $swn  = "$($sw.Name)"
+        $tag  = "$($p.PolicySchemaTag)"
+        $mode = "$($pa.Assignment.AssignmentMode)"
+
+        # 1) Deny wird bewusst nicht automatisiert (keine Deny-Gruppen im AD).
+        if ($tag -ieq 'DenyPolicy') {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Deny-Policy (nicht automatisiert)' "Software=$swn"))
+            continue
+        }
+        # 2) deaktiviert
+        if ((-not $p.IsActive) -or ($mode -ieq 'Disabled')) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Policy deaktiviert' "Software=$swn"))
+            continue
+        }
+        # 3) keine Instanz-Erzeugung
+        if ($mode -ieq 'NoDeployment') {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Keine Instanz-Erzeugung' "Software=$swn"))
+            continue
+        }
+        # 4/5) Aktivierungsfenster (steckt NICHT im AssignmentMode -> selbst prüfen).
+        $end   = _Oup-DsmDate $p.ActivationEndDate
+        $start = _Oup-DsmDate $p.ActivationStartDate
+        if ($end -and $end -lt $Now) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Policy abgelaufen' "Ende=$($p.ActivationEndDate), Software=$swn"))
+            continue
+        }
+        if ($start -and $start -gt $Now) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Policy noch nicht aktiv' "Start=$($p.ActivationStartDate), Software=$swn"))
+            continue
+        }
+        # 6) Modus muss Required oder Available sein.
+        if (@('Required', 'Available') -notcontains $mode) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn "Unbekannter Zuweisungsmodus '$mode'" "Software=$swn"))
+            continue
+        }
+        # Endung aus PolicySchemaTag x AssignmentMode (Spec-Namensschema).
+        $suffix = $null
+        if     ($tag -ieq 'SwPolicy'  -and $mode -ieq 'Required')  { $suffix = 'Policy' }
+        elseif ($tag -ieq 'JobPolicy' -and $mode -ieq 'Required')  { $suffix = 'Job' }
+        elseif ($tag -ieq 'SwPolicy'  -and $mode -ieq 'Available') { $suffix = 'Policy-Available' }
+        elseif ($tag -ieq 'JobPolicy' -and $mode -ieq 'Available') { $suffix = 'Job-Available' }
+        if (-not $suffix) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn "Unbekannter Policy-Typ '$tag'" "Software=$swn"))
+            continue
+        }
+        # 7) Namensbrücke: DSM-Paketname -> AD-App-Name.
+        $app = $null
+        if ($swn) { $app = $Mapping[$swn.ToLowerInvariant()] }
+        if (-not $app) {
+            $rows.Add((_Oup-DsmRow $file 'Policy' $pn 'Kein Mapping fuer DSM-Software' "Software=$swn"))
+            continue
+        }
+
+        $name = "$($FileResult.Rbsst)-$app-$suffix"
+        $key  = $name.ToLowerInvariant()
+        if (-not $targets.Contains($key)) {
+            $targets[$key] = [PSCustomObject]@{
+                TargetName = $name; App = $app; Software = $swn
+                Mode = $mode; PolicySchemaTag = $tag
+            }
+        }
+    }
+
+    return [PSCustomObject]@{ Targets = @($targets.Values); ReportRows = $rows.ToArray() }
+}
+
+Export-ModuleMember -Function Read-OupDsmGroupFile, Get-OupDsmMappingPath, Import-OupDsmMapping, `
+    Resolve-OupDsmAssignments

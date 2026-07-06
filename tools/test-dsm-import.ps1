@@ -50,6 +50,45 @@ Assert ($r.Rejected) 'Kaputtes JSON: abgelehnt'
 Assert (@($r.ReportRows | Where-Object { $_.Grund -eq 'Ungueltiges JSON' }).Count -eq 1) 'Kaputtes JSON: Report-Zeile'
 Remove-Item $tmp -Force
 
+# ── Mapping-Loader ──────────────────────────────────────────────────────────
+$map = Import-OupDsmMapping -Path (Join-Path $samples 'dsm-mapping.example.json')
+Assert ($null -ne $map) 'Mapping: Beispieldatei geladen'
+Assert ($map.Count -eq 5) 'Mapping: 5 Eintraege'
+Assert ($map['7-zip 24.09 x64'] -eq '7Zip') 'Mapping: Schluessel lowercase (case-insensitiv)'
+Assert ($null -eq (Import-OupDsmMapping -Path (Join-Path $samples 'gibt-es-nicht.json'))) 'Mapping: fehlende Datei -> $null'
+Assert ((Get-OupDsmMappingPath -ConfiguredPath '' -AppRoot 'C:\App') -eq 'C:\App\dsm-mapping.json') 'Mapping: Default-Pfad'
+Assert ((Get-OupDsmMappingPath -ConfiguredPath 'D:\x.json' -AppRoot 'C:\App') -eq 'D:\x.json') 'Mapping: konfigurierter Pfad gewinnt'
+
+# ── Resolve-OupDsmAssignments ───────────────────────────────────────────────
+$now = [DateTimeOffset]::Parse('2026-07-06T12:00:00+02:00', [System.Globalization.CultureInfo]::InvariantCulture)
+
+$r   = Read-OupDsmGroupFile -Path (Join-Path $samples 'RBSSt01_Clients_Basis.txt')
+$res = Resolve-OupDsmAssignments -FileResult $r -Mapping $map -Now $now
+$names = @($res.Targets | ForEach-Object { $_.TargetName })
+Assert (@($res.Targets).Count -eq 3) 'Basis: 3 Ziele (7-Zip-Doppelzuweisung dedupliziert)'
+Assert ($names -contains 'RBSSt01-ClientBasis-Policy') 'Basis: SwSet -> RBSSt01-ClientBasis-Policy'
+Assert ($names -contains 'RBSSt01-7Zip-Policy') 'Basis: SwPolicy+Required -> RBSSt01-7Zip-Policy'
+Assert ($names -contains 'RBSSt01-Firefox-Job') 'Basis: JobPolicy+Required -> RBSSt01-Firefox-Job'
+Assert (@($res.ReportRows).Count -eq 0) 'Basis: keine Filter-Zeilen'
+
+$r   = Read-OupDsmGroupFile -Path (Join-Path $samples 'RBSSt01_Clients_Fach_X.txt')
+$res = Resolve-OupDsmAssignments -FileResult $r -Mapping $map -Now $now
+Assert (@($res.Targets).Count -eq 1) 'FachX: 1 Ziel'
+Assert ($res.Targets[0].TargetName -eq 'RBSSt01-Office-Policy-Available') 'FachX: SwPolicy+Available -> -Policy-Available'
+
+$r   = Read-OupDsmGroupFile -Path (Join-Path $samples 'RBSSt01_Clients_Alt.txt')
+$res = Resolve-OupDsmAssignments -FileResult $r -Mapping $map -Now $now
+Assert (@($res.Targets).Count -eq 1) 'Alt: nur VLC bleibt uebrig'
+Assert ($res.Targets[0].TargetName -eq 'RBSSt01-VLC-Policy') 'Alt: VLC -> RBSSt01-VLC-Policy'
+$g = @($res.ReportRows | ForEach-Object { $_.Grund })
+Assert ($g -contains 'Deny-Policy (nicht automatisiert)') 'Alt: Deny im Report'
+Assert ($g -contains 'Policy deaktiviert') 'Alt: deaktiviert im Report'
+Assert ($g -contains 'Keine Instanz-Erzeugung') 'Alt: NoDeployment im Report'
+Assert ($g -contains 'Policy abgelaufen') 'Alt: abgelaufen im Report'
+Assert ($g -contains 'Policy noch nicht aktiv') 'Alt: Zukunfts-Start im Report'
+Assert ($g -contains 'Kein Mapping fuer DSM-Software') 'Alt: fehlendes Mapping im Report'
+Assert (@($res.ReportRows).Count -eq 6) 'Alt: genau 6 Filter-Zeilen'
+
 # ── Ergebnis ────────────────────────────────────────────────────────────────
 Write-Host ''
 if ($script:fails -gt 0) { Write-Host "$script:fails Assertion(s) fehlgeschlagen." -ForegroundColor Red; exit 1 }
