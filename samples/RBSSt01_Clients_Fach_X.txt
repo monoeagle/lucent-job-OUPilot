@@ -1,0 +1,54 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:47:30+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Fach_X",
+    "DSMGroupId": 4712055,
+    "SchemaTag": "DynamicGroup",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt01",
+    "OUPath": "ORG/RBSSt01/Clients/Fachverfahren/Gruppen",
+    "OUPathParts": ["ORG", "RBSSt01", "Clients", "Fachverfahren", "Gruppen"],
+    "ParentContainerId": 320081
+  },
+  "Membership": {
+    "MembershipType": "Dynamic",
+    "ExportMode": "ResolvedSnapshot",
+    "Members": [
+      { "Name": "PC-010101", "DSMObjectId": 9101101, "SchemaTag": "Computer" },
+      { "Name": "PC-010102", "DSMObjectId": 9101102, "SchemaTag": "Computer" }
+    ]
+  },
+  "DynamicRules": {
+    "RuleExported": true,
+    "RuleSource": "DynamicGroupProps",
+    "ParentDynamicGroupId": null,
+    "OwnFilter": "(&(SchemaTag=Computer)(Name=PC-0101*))",
+    "EffectiveLdapFilter": "(&(SchemaTag=Computer)(ParentContId=320081)(Name=PC-0101*))",
+    "RuleChain": [
+      { "Level": 0, "DSMGroupId": 4712055, "Name": "Clients_Fach_X", "ParentDynamicGroupId": null, "Filter": "(&(SchemaTag=Computer)(Name=PC-0101*))" }
+    ],
+    "EvaluationHint": { "RuleMeaning": "Mitglieder ergeben sich aus dem eigenen Filter.", "CanBeConvertedToSccmQueryRule": true, "ManualReviewRecommended": true }
+  },
+  "PolicyAssignments": [
+    {
+      "Policy": { "PolicyId": 9400780, "PolicyName": "Microsoft Office LTSC -> Clients_Fach_X", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 2000, "Priority": 70, "ActivationStartDate": "2026-05-15T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Available", "InstanceCreationMode": 1, "InstanceCreationModeText": "OnDemand", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "Microsoft Office LTSC", "DSMObjectId": 6300440, "SchemaTag": "MsiPackage", "Revision": 12, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    }
+  ],
+  "Validation": {
+    "IsValidForMigration": true,
+    "Warnings": [
+      "Die DSM-Gruppe ist dynamisch. Die exportierten Mitglieder bilden den aufgeloesten Stand zum Exportzeitpunkt ab.",
+      "Die dynamischen Regeln wurden zusaetzlich exportiert. Eine automatische Uebersetzung nach SCCM Query Rules muss fachlich geprueft werden."
+    ],
+    "Errors": []
+  }
+}

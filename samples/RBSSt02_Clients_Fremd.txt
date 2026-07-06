@@ -1,0 +1,36 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:53:10+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Fremd",
+    "DSMGroupId": 4720001,
+    "SchemaTag": "Group",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt02",
+    "OUPath": "ORG/RBSSt02/Clients/Gruppen",
+    "OUPathParts": ["ORG", "RBSSt02", "Clients", "Gruppen"],
+    "ParentContainerId": 360001
+  },
+  "Membership": {
+    "MembershipType": "Static",
+    "ExportMode": "DirectMembers",
+    "Members": [
+      { "Name": "PC-020001", "DSMObjectId": 9200001, "SchemaTag": "Computer" }
+    ]
+  },
+  "DynamicRules": null,
+  "PolicyAssignments": [
+    {
+      "Policy": { "PolicyId": 9600001, "PolicyName": "7-Zip 24.09 x64 -> Clients_Fremd", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 1000, "Priority": 50, "ActivationStartDate": "2026-06-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "7-Zip 24.09 x64", "DSMObjectId": 6200115, "SchemaTag": "eScriptPackage", "Revision": 3, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    }
+  ],
+  "Validation": { "IsValidForMigration": true, "Warnings": [], "Errors": [] }
+}

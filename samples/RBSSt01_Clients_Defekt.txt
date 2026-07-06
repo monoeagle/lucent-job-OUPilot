@@ -1,0 +1,34 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:52:00+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Defekt",
+    "DSMGroupId": 4715000,
+    "SchemaTag": "Group",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt01",
+    "OUPath": "ORG/RBSSt01/Clients/Defekt",
+    "OUPathParts": ["ORG", "RBSSt01", "Clients", "Defekt"],
+    "ParentContainerId": 350000
+  },
+  "Membership": {
+    "MembershipType": "Static",
+    "ExportMode": "DirectMembers",
+    "Members": [
+      { "Name": "PC-010401", "DSMObjectId": 9105401, "SchemaTag": "Computer" }
+    ]
+  },
+  "DynamicRules": null,
+  "PolicyAssignments": [],
+  "Validation": {
+    "IsValidForMigration": false,
+    "Warnings": [],
+    "Errors": ["Der OU-Pfad der Gruppe konnte nicht eindeutig aufgeloest werden."]
+  }
+}

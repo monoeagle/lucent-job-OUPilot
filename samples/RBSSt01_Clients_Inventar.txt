@@ -1,0 +1,36 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:50:44+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Inventar",
+    "DSMGroupId": 4714120,
+    "SchemaTag": "Group",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt01",
+    "OUPath": "ORG/RBSSt01/Clients/Inventarisierung/Gruppen",
+    "OUPathParts": ["ORG", "RBSSt01", "Clients", "Inventarisierung", "Gruppen"],
+    "ParentContainerId": 340077
+  },
+  "Membership": {
+    "MembershipType": "Static",
+    "ExportMode": "DirectMembers",
+    "Members": [
+      { "Name": "PC-010301", "DSMObjectId": 9104301, "SchemaTag": "Computer" },
+      { "Name": "PC-010302", "DSMObjectId": 9104302, "SchemaTag": "Computer" },
+      { "Name": "Untergruppe_Inventar", "DSMObjectId": 9104999, "SchemaTag": "Group" }
+    ]
+  },
+  "DynamicRules": null,
+  "PolicyAssignments": [],
+  "Validation": {
+    "IsValidForMigration": true,
+    "Warnings": ["Die Gruppe enthaelt keine direkte DSM-Policy-Zuweisung."],
+    "Errors": []
+  }
+}

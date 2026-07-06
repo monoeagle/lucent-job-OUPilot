@@ -1,0 +1,53 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:45:12+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Basis",
+    "DSMGroupId": 4711001,
+    "SchemaTag": "Group",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt01",
+    "OUPath": "ORG/RBSSt01/Clients/Gruppen/Basis",
+    "OUPathParts": ["ORG", "RBSSt01", "Clients", "Gruppen", "Basis"],
+    "ParentContainerId": 310045
+  },
+  "Membership": {
+    "MembershipType": "Static",
+    "ExportMode": "DirectMembers",
+    "Members": [
+      { "Name": "PC-010001", "DSMObjectId": 9100001, "SchemaTag": "Computer" },
+      { "Name": "PC-010002", "DSMObjectId": 9100002, "SchemaTag": "Computer" },
+      { "Name": "PC-010003", "DSMObjectId": 9100003, "SchemaTag": "Computer" }
+    ]
+  },
+  "DynamicRules": null,
+  "PolicyAssignments": [
+    {
+      "Policy": { "PolicyId": 9300101, "PolicyName": "SWSET_Client_Basis -> Clients_Basis", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 1000, "Priority": 50, "ActivationStartDate": "2026-06-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "SWSET_Client_Basis", "DSMObjectId": 6200100, "SchemaTag": "SwSet", "Revision": 8, "IsSoftwareSet": true, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "SoftwareSetOnly" } }
+    },
+    {
+      "Policy": { "PolicyId": 9300102, "PolicyName": "7-Zip 24.09 x64 -> Clients_Basis", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 1100, "Priority": 50, "ActivationStartDate": "2026-06-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "7-Zip 24.09 x64", "DSMObjectId": 6200115, "SchemaTag": "eScriptPackage", "Revision": 3, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9300103, "PolicyName": "7-Zip 24.09 x64 Rev4 Pilot -> Clients_Basis", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 1100, "Priority": 90, "ActivationStartDate": "2026-06-15T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "7-Zip 24.09 x64", "DSMObjectId": 6200116, "SchemaTag": "eScriptPackage", "Revision": 4, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9300104, "PolicyName": "Mozilla Firefox ESR -> Clients_Basis", "PolicySchemaTag": "JobPolicy", "IsActive": true, "InstallationOrder": 1200, "Priority": 50, "ActivationStartDate": "2026-06-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "Mozilla Firefox ESR", "DSMObjectId": 6200130, "SchemaTag": "MsiPackage", "Revision": 17, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    }
+  ],
+  "Validation": { "IsValidForMigration": true, "Warnings": [], "Errors": [] }
+}

@@ -1,0 +1,71 @@
+{
+  "SchemaVersion": "1.0",
+  "ExportInfo": {
+    "ExportTimestamp": "2026-07-02T14:49:02+02:00",
+    "SourceSystem": "Ivanti DSM",
+    "SourceEnvironment": "DSM-PROD",
+    "ExportTool": "Export-DsmGroupsAndPolicies.ps1",
+    "ExportToolVersion": "1.0"
+  },
+  "DSMGroup": {
+    "Name": "Clients_Alt",
+    "DSMGroupId": 4713099,
+    "SchemaTag": "Group",
+    "GroupType": "Computer",
+    "RBSSt": "RBSSt01",
+    "OUPath": "ORG/RBSSt01/Clients/Altverfahren/Gruppen",
+    "OUPathParts": ["ORG", "RBSSt01", "Clients", "Altverfahren", "Gruppen"],
+    "ParentContainerId": 330091
+  },
+  "Membership": {
+    "MembershipType": "Static",
+    "ExportMode": "DirectMembers",
+    "Members": [
+      { "Name": "PC-010201", "DSMObjectId": 9103201, "SchemaTag": "Computer" },
+      { "Name": "PC-010202", "DSMObjectId": 9103202, "SchemaTag": "Computer" }
+    ]
+  },
+  "DynamicRules": null,
+  "PolicyAssignments": [
+    {
+      "Policy": { "PolicyId": 9500201, "PolicyName": "Altverfahren Y Client -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": false, "InstallationOrder": 3000, "Priority": 50, "ActivationStartDate": "2024-09-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Disabled", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "Altverfahren Y Client", "DSMObjectId": 6400200, "SchemaTag": "MsiPackage", "Revision": 9, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500202, "PolicyName": "Altverfahren Y Migrationspaket -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 3010, "Priority": 80, "ActivationStartDate": "2025-01-10T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "NoDeployment", "InstanceCreationMode": 2, "InstanceCreationModeText": "NoInstanceCreation", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "Altverfahren Y Migrationspaket", "DSMObjectId": 6400202, "SchemaTag": "eScriptPackage", "Revision": 1, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500203, "PolicyName": "AltTool -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 3020, "Priority": 50, "ActivationStartDate": "2025-01-10T18:00:00Z", "ActivationEndDate": "2025-12-31T22:59:59Z" },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "AltTool", "DSMObjectId": 6400203, "SchemaTag": "eScriptPackage", "Revision": 2, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500204, "PolicyName": "ZukunftsTool 2.0 -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 3030, "Priority": 50, "ActivationStartDate": "2027-01-01T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "ZukunftsTool 2.0", "DSMObjectId": 6400204, "SchemaTag": "MsiPackage", "Revision": 1, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500205, "PolicyName": "VLC Deny -> Clients_Alt", "PolicySchemaTag": "DenyPolicy", "IsActive": true, "InstallationOrder": null, "Priority": null, "ActivationStartDate": null, "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "VLC Media Player 3", "DSMObjectId": 6400205, "SchemaTag": "MsiPackage", "Revision": 5, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500206, "PolicyName": "VLC Media Player 3 -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 3040, "Priority": 50, "ActivationStartDate": "2026-01-10T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "VLC Media Player 3", "DSMObjectId": 6400205, "SchemaTag": "MsiPackage", "Revision": 5, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    },
+    {
+      "Policy": { "PolicyId": 9500207, "PolicyName": "ExotenTool 1.0 -> Clients_Alt", "PolicySchemaTag": "SwPolicy", "IsActive": true, "InstallationOrder": 3050, "Priority": 50, "ActivationStartDate": "2026-01-10T18:00:00Z", "ActivationEndDate": null },
+      "Assignment": { "AssignmentMode": "Required", "InstanceCreationMode": 0, "InstanceCreationModeText": "Automatic", "TargetSelectionMode": "Computer" },
+      "Software": { "Name": "ExotenTool 1.0", "DSMObjectId": 6400206, "SchemaTag": "eScriptPackage", "Revision": 1, "IsSoftwareSet": false, "SoftwareSetHandling": { "ComponentsExported": false, "MigrationHint": "Package" } }
+    }
+  ],
+  "Validation": {
+    "IsValidForMigration": true,
+    "Warnings": ["Eine Policy ist deaktiviert.", "Eine Policy besitzt ein ActivationEndDate in der Vergangenheit."],
+    "Errors": []
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "_hinweis": "Kopiere diese Datei nach ..\\dsm-mapping.json (App-Root; Pfad via Settings-Key DsmMappingPath ueberschreibbar). DSM-Paketname -> AD-App-Name, Abgleich exakt und case-insensitiv. DSM-Software ohne Eintrag wird NICHT einsortiert, sondern im Report ausgewiesen.",
+  "Software": {
+    "SWSET_Client_Basis": "ClientBasis",
+    "7-Zip 24.09 x64": "7Zip",
+    "Mozilla Firefox ESR": "Firefox",
+    "Microsoft Office LTSC": "Office",
+    "VLC Media Player 3": "VLC"
+  }
+}
