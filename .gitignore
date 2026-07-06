@@ -1,12 +1,14 @@
 # Runtime-Logs & Konflikt-Reports
 Logs/*.log
 Logs/konflikte-*.csv
+Logs/dsm-report-*.csv
 
 # Laufzeit-Store (GUID-Mapping, dev/mock — wird von der App geschrieben)
 data/mapping.json
 
 # Site-spezifische Feld-Map (Vorlage: samples/fieldmap.example.json)
 fieldmap.json
+dsm-mapping.json
 
 # Doku-Site (zensical): Build-Ausgabe + eigenes venv + generierte Daten
 OUPilot-docs/site/

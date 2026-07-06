@@ -81,7 +81,7 @@ vorhandenen `Validation.Errors` oder wenn ihre RBSSt nicht zur gewählten
 Standort-OU passt. Eine abgelehnte Datei blockiert die übrigen nicht.
 `Validation.Warnings` sind rein informativ und werden trotzdem verarbeitet.
 Dynamische Gruppen (`MembershipType = Dynamic`) werden über den exportierten
-Snapshot der Mitgliedschaft (`ResolvedSnapshot`) einsortiert.
+Snapshot der Mitgliedschaft (`ExportMode = ResolvedSnapshot`) einsortiert.
 
 Alles, was nicht automatisch einsortiert werden konnte — Deny-Policies,
 gefilterte Policies, Nicht-Computer-Mitglieder, fehlende Mappings, fehlende
