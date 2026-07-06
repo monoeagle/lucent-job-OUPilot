@@ -101,6 +101,28 @@ Assert ($index.ByName.ContainsKey('rbsst01-office-policy-available')) 'Mock: Ava
 Assert ($index.ByName.ContainsKey('rbsst01-clientbasis-policy')) 'Mock: ClientBasis-Gruppe vorhanden'
 Assert (-not $index.ByName.ContainsKey('rbsst01-vlc-policy')) 'Mock: VLC-Gruppe fehlt absichtlich'
 
+# ── New-OupDsmImportPlan: End-to-End ueber alle 6 Beispieldateien ───────────
+$paths = @('RBSSt01_Clients_Basis.txt', 'RBSSt01_Clients_Fach_X.txt', 'RBSSt01_Clients_Alt.txt',
+           'RBSSt01_Clients_Inventar.txt', 'RBSSt01_Clients_Defekt.txt', 'RBSSt02_Clients_Fremd.txt' |
+           ForEach-Object { Join-Path $samples $_ })
+$plan = New-OupDsmImportPlan -Paths $paths -Mapping $map -GroupIndex $index -StandortName 'RBSSt01' -Now $now
+
+Assert ($plan.Files -eq 6) 'Plan: 6 Dateien'
+Assert ($plan.FilesProcessed -eq 4) 'Plan: 4 verarbeitet'
+Assert ($plan.FilesRejected -eq 2) 'Plan: 2 abgelehnt (Defekt + fremder RBSSt)'
+Assert ($plan.ComputerCount -eq 9) 'Plan: 9 Rechner (3+2+2+2)'
+Assert ($plan.GroupCount -eq 4) 'Plan: 4 Zielgruppen'
+Assert ($plan.MembershipCount -eq 11) 'Plan: 11 Mitgliedschaften (9 Basis + 2 FachX)'
+Assert (@($plan.MissingGroups).Count -eq 1 -and $plan.MissingGroups[0] -eq 'RBSSt01-VLC-Policy') 'Plan: VLC-Gruppe fehlt'
+Assert (@($plan.ReportRows | Where-Object { $_.Datei -eq 'RBSSt02_Clients_Fremd.txt' -and $_.Grund -eq 'Datei abgelehnt' }).Count -eq 1) 'Plan: RBSSt-Fremddatei abgelehnt'
+Assert (@($plan.ReportRows | Where-Object { $_.Ebene -eq 'Gruppe' }).Count -eq 1) 'Plan: 1 Gruppe-fehlt-Zeile'
+
+$bucketNames = @($plan.Buckets.Values | ForEach-Object { $_.node.Name }) | Sort-Object
+Assert (($bucketNames -join ',') -eq 'RBSSt01-7Zip-Policy,RBSSt01-ClientBasis-Policy,RBSSt01-Firefox-Job,RBSSt01-Office-Policy-Available') 'Plan: richtige Ziel-Buckets'
+$firstBucket = @($plan.Buckets.Values | Where-Object { $_.node.Name -eq 'RBSSt01-7Zip-Policy' })[0]
+Assert (@($firstBucket.entries).Count -eq 3) 'Plan: 3 Eintraege im 7Zip-Bucket'
+Assert ($firstBucket.entries[0].targetGroup -eq 'RBSSt01-7Zip-Policy') 'Plan: targetGroup am Eintrag gesetzt'
+
 # ── Ergebnis ────────────────────────────────────────────────────────────────
 Write-Host ''
 if ($script:fails -gt 0) { Write-Host "$script:fails Assertion(s) fehlgeschlagen." -ForegroundColor Red; exit 1 }

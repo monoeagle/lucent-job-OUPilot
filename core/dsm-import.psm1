@@ -230,5 +230,88 @@ function Resolve-OupDsmAssignments {
     return [PSCustomObject]@{ Targets = @($targets.Values); ReportRows = $rows.ToArray() }
 }
 
+function New-OupDsmImportPlan {
+    <#
+        .SYNOPSIS  Baut aus DSM-Exportdateien den Import-Plan für einen Standort:
+                   Buckets (Zielgruppe -> Einträge) + Report-Zeilen + Kennzahlen.
+        .DESCRIPTION  Dateien sind unabhängig: eine abgelehnte Datei (Gate,
+                      fremder RBSSt) blockiert die übrigen nicht. Fehlende
+                      Zielgruppen werden nicht angelegt, nur berichtet.
+        .PARAMETER GroupIndex  Ergebnis von Get-OupGroupIndex über die gewählte
+                               Standort-OU (.ByName: Name lowercase -> Knoten).
+        .OUTPUTS   PSCustomObject @{ Buckets; ReportRows; Files; FilesProcessed;
+                   FilesRejected; ComputerCount; GroupCount; MembershipCount;
+                   MissingGroups }
+    #>
+    param(
+        [Parameter(Mandatory)][string[]]$Paths,
+        [Parameter(Mandatory)][hashtable]$Mapping,
+        [Parameter(Mandatory)]$GroupIndex,
+        [Parameter(Mandatory)][string]$StandortName,
+        [Nullable[DateTimeOffset]]$Now
+    )
+
+    $rows        = New-Object System.Collections.Generic.List[object]
+    $buckets     = @{}     # GruppenGuid -> @{ node; entries }
+    $computers   = @{}     # identifier -> $true
+    $missing     = @{}     # Zielname -> $true
+    $processed   = 0
+    $rejected    = 0
+    $memberships = 0
+
+    foreach ($path in $Paths) {
+        $fr = Read-OupDsmGroupFile -Path $path
+        foreach ($r in @($fr.ReportRows)) { $rows.Add($r) }
+        if ($fr.Rejected) { $rejected++; continue }
+
+        # Standort-Gate: RBSSt muss der gewählten OU entsprechen (RBSSt = OU-Name).
+        if ($fr.Rbsst -ine $StandortName) {
+            $rows.Add((_Oup-DsmRow $fr.File 'Datei' $fr.GroupName 'Datei abgelehnt' "RBSSt '$($fr.Rbsst)' passt nicht zur gewaehlten OU '$StandortName'"))
+            $rejected++
+            continue
+        }
+        $processed++
+        foreach ($m in @($fr.Members)) { $computers[$m.identifier] = $true }
+
+        $res = Resolve-OupDsmAssignments -FileResult $fr -Mapping $Mapping -Now $Now
+        foreach ($r in @($res.ReportRows)) { $rows.Add($r) }
+
+        foreach ($t in @($res.Targets)) {
+            $node = $GroupIndex.ByName[$t.TargetName.ToLowerInvariant()]
+            if (-not $node) {
+                if (-not $missing.ContainsKey($t.TargetName)) {
+                    $missing[$t.TargetName] = $true
+                    $rows.Add((_Oup-DsmRow $fr.File 'Gruppe' $t.TargetName 'Zielgruppe im AD nicht gefunden' "$(@($fr.Members).Count) Rechner (DSM-Software: $($t.Software))"))
+                }
+                continue
+            }
+            if (-not $buckets.ContainsKey($node.Guid)) {
+                # ArrayList statt List[object]: bietet ebenfalls .ToArray() (Task-6-UI),
+                # umgeht aber die pwsh-7.4.6/.NET-8.0.10-Regression, bei der
+                # @(<generische List>) mit "Argument types do not match" scheitert.
+                $buckets[$node.Guid] = [PSCustomObject]@{ node = $node; entries = (New-Object System.Collections.ArrayList) }
+            }
+            foreach ($m in @($fr.Members)) {
+                $copy = $m.PSObject.Copy()
+                $copy | Add-Member -NotePropertyName targetGroup -NotePropertyValue $node.Name -Force
+                [void]$buckets[$node.Guid].entries.Add($copy)
+                $memberships++
+            }
+        }
+    }
+
+    return [PSCustomObject]@{
+        Buckets         = $buckets
+        ReportRows      = $rows.ToArray()
+        Files           = @($Paths).Count
+        FilesProcessed  = $processed
+        FilesRejected   = $rejected
+        ComputerCount   = $computers.Count
+        GroupCount      = $buckets.Count
+        MembershipCount = $memberships
+        MissingGroups   = @($missing.Keys)
+    }
+}
+
 Export-ModuleMember -Function Read-OupDsmGroupFile, Get-OupDsmMappingPath, Import-OupDsmMapping, `
-    Resolve-OupDsmAssignments
+    Resolve-OupDsmAssignments, New-OupDsmImportPlan
