@@ -1,74 +1,58 @@
-﻿# run-docs.ps1 — Baut die OUPilot-Doku-Site und oeffnet sie.
+﻿# run-docs.ps1 — OUPilot-Doku-Site (zensical). Windows-Wrapper fuer dieselbe
+# Pipeline wie OUPilot-docs\run_OUPilot_docs.sh: bootstrappt ein eigenes
+# .venv-docs, installiert zensical und baut/serviert die Site.
 #
-#   .\run-docs.ps1              baut + oeffnet site\index.html im Browser
-#   .\run-docs.ps1 -Serve       baut + startet lokalen Server (http://localhost:8099)
+#   .\run-docs.ps1            baut die Site und oeffnet sie im Browser
+#   .\run-docs.ps1 -Serve     lokaler Server auf http://127.0.0.1:8047
 #   .\run-docs.ps1 -Serve -Port 9000
-#   .\run-docs.ps1 -NoOpen      nur bauen (kein Browser)
-#
-# Abhaengigkeitsfrei: kein Python, kein pip, kein CDN. Reines PowerShell +
-# statisches HTML (docs-site\Build-DocsSite.ps1).
+#   .\run-docs.ps1 -NoOpen    nur bauen (kein Browser)
 param(
     [switch]$Serve,
-    [int]$Port = 8099,
+    [int]$Port = 8047,
     [switch]$NoOpen
 )
 $ErrorActionPreference = 'Stop'
 $here    = Split-Path -Parent $MyInvocation.MyCommand.Path
-$builder = Join-Path $here 'docs-site\Build-DocsSite.ps1'
-$siteDir = Join-Path $here 'docs-site\site'
+$docs    = Join-Path $here 'OUPilot-docs'
+$venv    = Join-Path $docs '.venv-docs'
+$venvPy  = Join-Path $venv 'Scripts\python.exe'
 
-# Bauen.
-$index = & $builder
-if (-not (Test-Path $index)) { throw "Build lieferte keine index.html ($index)" }
-
-if (-not $Serve) {
-    Write-Host "Oeffne: $index"
-    if (-not $NoOpen) { Start-Process $index }
-    Write-Host "Fertig. (Fuer lokalen Server: .\run-docs.ps1 -Serve)"
-    return
-}
-
-# Lokaler Server via HttpListener (keine externen Abhaengigkeiten).
-$prefix = "http://localhost:$Port/"
-$listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add($prefix)
-try { $listener.Start() }
-catch { throw "Konnte $prefix nicht binden ($($_.Exception.Message)). Anderen Port waehlen: -Port <n>." }
-
-Write-Host ""
-Write-Host "  OUPilot-Doku laeuft auf $prefix" -ForegroundColor Cyan
-Write-Host "  Beenden mit Strg+C." -ForegroundColor DarkGray
-Write-Host ""
-if (-not $NoOpen) { Start-Process $prefix }
-
-$mime = @{
-    '.html' = 'text/html; charset=utf-8'; '.css' = 'text/css; charset=utf-8'
-    '.js' = 'application/javascript; charset=utf-8'; '.json' = 'application/json'
-    '.svg' = 'image/svg+xml'; '.png' = 'image/png'; '.ico' = 'image/x-icon'
-}
-try {
-    while ($listener.IsListening) {
-        $ctx = $listener.GetContext()
-        $rel = [uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath.TrimStart('/'))
-        if ([string]::IsNullOrWhiteSpace($rel)) { $rel = 'index.html' }
-        $full = Join-Path $siteDir $rel
-        # Pfad-Traversal verhindern.
-        $fullResolved = [System.IO.Path]::GetFullPath($full)
-        if (-not $fullResolved.StartsWith([System.IO.Path]::GetFullPath($siteDir))) {
-            $ctx.Response.StatusCode = 403; $ctx.Response.Close(); continue
-        }
-        if (Test-Path $fullResolved -PathType Leaf) {
-            $bytes = [System.IO.File]::ReadAllBytes($fullResolved)
-            $ext = [System.IO.Path]::GetExtension($fullResolved).ToLower()
-            $ctx.Response.ContentType = if ($mime.ContainsKey($ext)) { $mime[$ext] } else { 'application/octet-stream' }
-            $ctx.Response.OutputStream.Write($bytes, 0, $bytes.Length)
-        } else {
-            $ctx.Response.StatusCode = 404
-            $msg = [System.Text.Encoding]::UTF8.GetBytes('404 - nicht gefunden')
-            $ctx.Response.OutputStream.Write($msg, 0, $msg.Length)
-        }
-        $ctx.Response.Close()
+# Python finden (py-Launcher bevorzugt).
+function Get-Python {
+    foreach ($c in @('py -3.14', 'py -3', 'python')) {
+        $exe, $arg = $c.Split(' ', 2)
+        if (Get-Command $exe -ErrorAction SilentlyContinue) { return @($exe, $arg) }
     }
-} finally {
-    $listener.Stop(); $listener.Close()
+    throw 'Kein Python gefunden (py/python). Bitte Python 3 installieren.'
+}
+
+# .venv-docs anlegen.
+if (-not (Test-Path $venvPy)) {
+    Write-Host '  > Erstelle .venv-docs ...' -ForegroundColor Cyan
+    $py = Get-Python
+    if ($py[1]) { & $py[0] $py[1] -m venv $venv } else { & $py[0] -m venv $venv }
+}
+
+# Zensical sicherstellen.
+& $venvPy -m pip show zensical *> $null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host '  > Installiere Zensical ...' -ForegroundColor Cyan
+    & $venvPy -m pip install --quiet --upgrade pip
+    & $venvPy -m pip install --quiet zensical
+}
+$zv = (& $venvPy -m zensical --version 2>$null | Select-Object -First 1)
+Write-Host "  Zensical: $zv" -ForegroundColor Green
+
+$build = Join-Path $docs 'build_docs.py'
+if ($Serve) {
+    Write-Host "  Live-Server auf http://127.0.0.1:$Port  (Strg+C zum Beenden)" -ForegroundColor Cyan
+    if (-not $NoOpen) { Start-Process "http://127.0.0.1:$Port" }
+    & $venvPy $build --serve --port $Port
+} else {
+    & $venvPy $build
+    $index = Join-Path $docs 'site\index.html'
+    if (Test-Path $index) {
+        Write-Host "  Fertig: $index"
+        if (-not $NoOpen) { Start-Process $index }
+    }
 }

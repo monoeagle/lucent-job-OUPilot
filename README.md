@@ -47,19 +47,23 @@ benötigt die Desktop-Edition. **Ohne Domäne** fällt das Einlesen automatisch 
 Fertige App als Zip: **[neuestes Release](https://github.com/monoeagle/lucent-job-OUPilot/releases/latest)**
 (`OUPilot-1.4.0.zip` entpacken, `run.ps1` starten) — oder das Repo klonen.
 
-## Dokumentation lokal ansehen
+## Dokumentation
 
-Dieses README, die Testclient-Checkliste und der Changelog lassen sich als lokale,
-statische Website ansehen — **ohne Python/Node, ohne CDN**, rein PowerShell:
+Ausführliche Doku als lokale Website (**zensical/Material**, Layout identisch zu den
+anderen Lucent-Projekten — Icon-Rail-Navigation, Aktivitäts-Heatmap, Diagramme):
 
 ```powershell
-.\run-docs.ps1            # baut die Site und öffnet sie im Browser
-.\run-docs.ps1 -Serve     # lokaler Server auf http://localhost:8099
+.\run-docs.ps1            # baut die Site (OUPilot-docs\) und öffnet sie
+.\run-docs.ps1 -Serve     # lokaler Server auf http://127.0.0.1:8047
 ```
 
-Der Generator (`docs-site\Build-DocsSite.ps1` + `Convert-Markdown.psm1`) rendert die
-Markdown-Dateien zu einer self-contained HTML-Site (`docs-site\site\`, gitignored)
-mit Seiten-Navigation und Hell/Dunkel-Umschaltung.
+(oder `bash OUPilot-docs\run_OUPilot_docs.sh`). Beim ersten Start wird ein eigenes
+`.venv-docs` angelegt und **zensical** installiert (Python 3). Die Diagramme
+(AP-Übersicht, Architektur, Roadmap) sind gerenderte SVGs unter
+`OUPilot-docs\docs\images\mermaid\` (Quellen in `OUPilot-docs\mermaid-sources\`,
+Rendern via `bash OUPilot-docs\tools\render_mermaid.sh`, benötigt Node/`npx`).
+`font=false` hält die Site **CDN-frei**; die gebaute `site/` wird als **gh-pages**
+veröffentlicht.
 
 ## AD-Auslesen (mit Fallback)
 
@@ -249,10 +253,13 @@ ui/
     sharp.xaml          Stil „Sharp" (scharfe Ecken) — Geometrie + Control-Styles
     soft.xaml           Stil „Soft" (3px-Ecken) — Geometrie + Control-Styles
     palettes/*.xaml     12 Farbschemata (nur Brushes)
-run-docs.ps1            Doku-Site bauen + öffnen (rein PowerShell, No-CDN)
-docs-site/
-  Convert-Markdown.psm1 Markdown->HTML-Konverter (abhängigkeitsfrei)
-  Build-DocsSite.ps1    baut docs-site\site\ aus README/CHANGELOG/docs
+run-docs.ps1            Doku-Site bauen/öffnen (zensical; Windows-Wrapper)
+OUPilot-docs/           Doku-Site (zensical/Material, wie andere Lucent-Projekte)
+  zensical.toml         Site-Konfig + Navigation
+  build_docs.py         Pipeline: Aktivitäts-JSON + zensical build
+  run_OUPilot_docs.sh   venv-Bootstrap + Serve/Build (bash)
+  docs/                 Inhalt (index, grundlagen, referenz, betrieb, entwicklung)
+  mermaid-sources/      Diagramm-Quellen (.mmd) -> docs/images/mermaid/*.svg
 tools/
   Ensure-Utf8Bom.ps1    Quelldateien als UTF-8 mit BOM sichern + Parsecheck
 samples/                Beispiel-Exporte + fieldmap.example.json

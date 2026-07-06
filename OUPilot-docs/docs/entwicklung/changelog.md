@@ -1,12 +1,11 @@
 # Changelog — OUPilot
 
 ## Unreleased
-- Doku-Site auf **zensical/Material** (`OUPilot-docs\`) — Layout identisch zu den
-  anderen Lucent-Projekten: Icon-Rail-Navigation, Aktivitäts-Heatmap + Insights aus
-  der Git-Historie, gerenderte Diagramme (AP-Übersicht, Architektur, Roadmap als
-  SVG). Start via `run-docs.ps1` bzw. `run_OUPilot_docs.sh` (eigenes `.venv-docs`,
-  `font=false` = CDN-frei). Als **gh-pages** veröffentlicht. Ersetzt den früheren
-  PowerShell-Generator.
+- Lokale Doku-Site: `run-docs.ps1` baut aus README/CHANGELOG/Testclient-Checkliste
+  eine statische HTML-Website (`docs-site\`) und öffnet sie; `-Serve` startet einen
+  lokalen Server. Abhängigkeitsfrei (reines PowerShell, kein Python/Node, No-CDN),
+  mit Seiten-Navigation und Hell/Dunkel-Umschaltung. Generat (`docs-site\site\`)
+  ist gitignored.
 
 ## 1.4.0
 - Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via

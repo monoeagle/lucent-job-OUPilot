@@ -1,0 +1,31 @@
+graph TD
+  subgraph UI["UI (WPF / XAML)"]
+    MW["main-window"]
+    AB["about-dialog"]
+    TL["theme-loader + themes/"]
+  end
+  subgraph CORE["Core-Module (PowerShell)"]
+    LOG["log"]
+    SET["settings.json"]
+    AR["ad-reader"]
+    AW["ad-writer"]
+    MS["mapping-store"]
+    IE["import-engine (+ Feld-Map)"]
+  end
+  subgraph AD["Active Directory"]
+    MOD["ActiveDirectory-Modul"]
+    ADSI["ADSI"]
+    MOCK["Mock (ohne Domäne)"]
+  end
+  RUN["run.ps1 / main.ps1"] --> UI
+  MW --> AR
+  MW --> AW
+  MW --> IE
+  MW --> MS
+  AR --> MOD
+  AR --> ADSI
+  AR --> MOCK
+  AW --> MOD
+  AW --> ADSI
+  MS --> STORE["data/mapping.json (GUID-Store)"]
+  classDef g fill:#1f7a4d,stroke:#12563a,color:#fff;

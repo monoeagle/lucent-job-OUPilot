@@ -8,7 +8,7 @@
 
 $root  = Split-Path -Parent $PSScriptRoot
 $files = Get-ChildItem -Path $root -Recurse -Include *.ps1, *.psm1 -File |
-    Where-Object { $_.FullName -notmatch '\\samples\\' }
+    Where-Object { $_.FullName -notmatch '\\samples\\' -and $_.FullName -notmatch '\\\.venv-docs\\' -and $_.FullName -notmatch '\\site\\' }
 
 $utf8bom = New-Object System.Text.UTF8Encoding($true)
 $bad     = 0
