@@ -2141,3 +2141,11 @@ body:has(.adb-home-layout) .md-content {
   .md-typeset .kz-barrow { grid-template-columns: 1fr; gap: 3px; }
   .md-typeset .kz-p { text-align: left; }
 }
+
+/* ── OUPilot: Startseite ohne Scroll (auch bei kurzen Fenstern) ───────────
+   Bewaehrter Offset (Header + Material-Kopfraum) beibehalten -> kein Scroll
+   auf normalen Groessen; nur die clamp-Untergrenze senken, damit das Layout
+   bei kurzen Fenstern schrumpft statt ueberzulaufen. min-height:0 laesst den
+   AP-Bereich mitschrumpfen.                                                  */
+:root { --adb-home-page-h: clamp(360px, calc(100vh - 150px), 1600px); }
+.adb-home-arch { min-height: 0; }
