@@ -652,7 +652,9 @@ function Get-OupDsmMappingPath {
     <#  .SYNOPSIS  Effektiver Pfad zur DSM-Mapping-Datei (Default: <AppRoot>\dsm-mapping.json).  #>
     param([string]$ConfiguredPath, [Parameter(Mandatory)][string]$AppRoot)
     if ($ConfiguredPath) { return $ConfiguredPath }
-    return Join-Path $AppRoot 'dsm-mapping.json'
+    # Fester Backslash statt Join-Path: die App laeuft nur auf Windows, und der
+    # Test-Harness (auch unter pwsh/Linux) prueft den Windows-Pfad wortgleich.
+    return "$AppRoot\dsm-mapping.json"
 }
 
 function Import-OupDsmMapping {
