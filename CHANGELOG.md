@@ -1,6 +1,21 @@
 # Changelog — OUPilot
 
 ## Unreleased
+- DSM-Export-Import (Standort-Ebene): eine JSON-Datei je DSM-Gruppe
+  (`<RBSSt>_<Gruppe>.txt` nach `int_jsonStructure.md`, SchemaVersion 1.0) wird
+  in AD-Mitgliedschaften `<RBSSt>-<App>-<Endung>` übersetzt (Endungen `Policy`,
+  `Job`, `Policy-Available`, `Job-Available` aus PolicySchemaTag × AssignmentMode).
+  Namensbrücke über `dsm-mapping.json` (DSM-Paketname → AD-App-Name, Settings-Key
+  `DsmMappingPath`, Vorlage `samples\dsm-mapping.example.json`). Deny-Policies,
+  deaktivierte/abgelaufene/noch-nicht-aktive Policies, Nicht-Computer-Mitglieder,
+  fehlende Mappings/Zielgruppen und abgelehnte Dateien (Validation-Gate, fremder
+  RBSSt) landen im CSV-Report `Logs\dsm-report-*.csv`. Dynamische Gruppen werden
+  über den exportierten Snapshot einsortiert.
+- core: neues Modul `dsm-import.psm1` (`Read-OupDsmGroupFile`,
+  `Resolve-OupDsmAssignments`, `New-OupDsmImportPlan`, Mapping-Loader); UI:
+  dritter Import-Modus `Standort` (OU ohne direkte Gruppen, mit Gruppen in
+  Sub-OUs); Mock um Standort `RBSSt01` nach realem AD-Muster erweitert;
+  Test-Harness `tools\test-dsm-import.ps1`.
 - Doku-Site auf **zensical/Material** (`OUPilot-docs\`) — Layout identisch zu den
   anderen Lucent-Projekten: Icon-Rail-Navigation, Aktivitäts-Heatmap + Insights aus
   der Git-Historie, gerenderte Diagramme (AP-Übersicht, Architektur, Roadmap als

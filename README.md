@@ -34,6 +34,20 @@ den Namen. Die GUID ist forest-weit eindeutig und überlebt **Umbenennen** und
 wiedererkannt; der Name ist reine Anzeige und wird jedes Mal frisch geholt.
 (`objectSID` wird zusätzlich gespeichert — als Fallback/Lesbarkeit in Logs.)
 
+## DSM-Export-Import (Standort-Ebene)
+
+Für die DSM→MECM-Migration verarbeitet OUPilot Exportdateien des DSM-Skripts
+(eine JSON-Datei je DSM-Gruppe, `<RBSSt>_<Gruppe>.txt`): Standort-OU im Baum
+wählen (RBSSt = OU-Name), Dateien importieren — jedes Gruppenmitglied wird für
+jede relevante Policy-Zuweisung in die AD-Gruppe `<RBSSt>-<App>-<Endung>`
+einsortiert (`-Policy`, `-Job`, `-Policy-Available`, `-Job-Available`).
+
+Voraussetzung ist die Namensbrücke `dsm-mapping.json` im App-Root (DSM-Paketname
+→ AD-App-Name; Vorlage `samples\dsm-mapping.example.json`, Pfad per Settings-Key
+`DsmMappingPath`). Nicht Einsortierbares — Deny-Policies, deaktivierte/abgelaufene
+Policies, fehlende Mappings oder Zielgruppen, abgelehnte Dateien — dokumentiert
+der CSV-Report `Logs\dsm-report-*.csv`. Beispieldateien: `samples\RBSSt0*.txt`.
+
 ## Start
 
 ```powershell
@@ -248,6 +262,7 @@ core/
   ad-writer.psm1        Rechner als Gruppenmitglieder schreiben (Modul/ADSI/Mock)
   mapping-store.psm1    GUID-Mapping-Store (data\mapping.json)
   import-engine.psm1    JSON-Exporte parsen & normalisieren (+ Feld-Map)
+  dsm-import.psm1       DSM-Export-Dateien -> Import-Plan (Standort-Import, + Mapping-Loader)
 ui/
   main-window.psm1      Hauptfenster: OU-TreeView + Import-Panel
   about-dialog.psm1     Info-/Über-Dialog (Tabs Info + Changelog)
@@ -265,8 +280,10 @@ OUPilot-docs/           Doku-Site (zensical/Material, wie andere Lucent-Projekte
   mermaid-sources/      Diagramm-Quellen (.mmd) -> docs/images/mermaid/*.svg
 tools/
   Ensure-Utf8Bom.ps1    Quelldateien als UTF-8 mit BOM sichern + Parsecheck
-samples/                Beispiel-Exporte + fieldmap.example.json
+  test-dsm-import.ps1   Testet dsm-import.psm1 gegen samples\RBSSt0*.txt
+samples/                Beispiel-Exporte + fieldmap.example.json + dsm-mapping.example.json + RBSSt0*.txt
 fieldmap.json           optional (App-Root): eigene Feldnamen; nicht eingecheckt
+dsm-mapping.json        optional (App-Root): DSM-Paketname -> AD-App-Name; nicht eingecheckt
 ```
 
 ## Entwicklung ohne Domäne / Test am Testclient

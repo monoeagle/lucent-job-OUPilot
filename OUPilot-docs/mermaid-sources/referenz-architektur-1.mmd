@@ -11,6 +11,7 @@ graph TD
     AW["ad-writer"]
     MS["mapping-store"]
     IE["import-engine (+ Feld-Map)"]
+    DSM["dsm-import (Standort-Import)"]
   end
   subgraph AD["Active Directory"]
     MOD["ActiveDirectory-Modul"]
@@ -22,6 +23,9 @@ graph TD
   MW --> AW
   MW --> IE
   MW --> MS
+  MW --> DSM
+  DSM --> AR
+  DSM --> AW
   AR --> MOD
   AR --> ADSI
   AR --> MOCK
