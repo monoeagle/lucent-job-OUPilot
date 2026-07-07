@@ -9,7 +9,7 @@ Typ **Job**/**Policy**) drin; das Tool sortiert jede Zuweisung in die Gruppe
 
 ```json
 [
-  { "computer": "PC-1001$", "standort": "Berlin-Nord",
+  { "computer": "PC-1001$", "standort": "RBSSt02-Nord",
     "assignments": [ {"software":"Office","type":"Policy"},
                      {"software":"7Zip","type":"Job"} ] }
 ]
@@ -34,7 +34,7 @@ Eine Datei fächert auf viele Gruppen über **exakte Gruppennamen** (kein SubOU-
 ```json
 [
   { "computer": "PC-1010$",
-    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Nord-7Zip-Job"] }
+    "groups": ["RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-7Zip-Job"] }
 ]
 ```
 

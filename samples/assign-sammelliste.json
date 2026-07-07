@@ -1,28 +1,28 @@
 [
   {
     "computer": "PC-1001$",
-    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Nord-7Zip-Job", "Berlin-Nord-Firefox-Policy", "Berlin-Nord-AdobeReader-Policy", "Berlin-Nord-MSTeams-Policy"]
+    "groups": ["RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-7Zip-Job", "RBSSt02-Nord-Firefox-Policy", "RBSSt02-Nord-AdobeReader-Policy", "RBSSt02-Nord-MSTeams-Policy"]
   },
   {
     "computer": "PC-1002$",
-    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Nord-GoogleChrome-Policy"]
+    "groups": ["RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-GoogleChrome-Policy"]
   },
   {
     "computer": "PC-1003$",
-    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Nord-VLC-Policy", "Berlin-Nord-Notepad-Job"]
+    "groups": ["RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-VLC-Policy", "RBSSt02-Nord-Notepad-Job"]
   },
   {
     "computer": "PC-1010$",
     "groups": [
-      "Berlin-Nord-Office-Policy", "Berlin-Nord-Office-Job", "Berlin-Nord-PDFCreator-Policy", "Berlin-Nord-PDFCreator-Job",
-      "Berlin-Nord-7Zip-Policy", "Berlin-Nord-7Zip-Job", "Berlin-Nord-GoogleChrome-Policy", "Berlin-Nord-GoogleChrome-Job",
-      "Berlin-Nord-Firefox-Policy", "Berlin-Nord-Firefox-Job", "Berlin-Nord-AdobeReader-Policy", "Berlin-Nord-AdobeReader-Job",
-      "Berlin-Nord-MSTeams-Policy", "Berlin-Nord-MSTeams-Job", "Berlin-Nord-Zoom-Policy", "Berlin-Nord-Zoom-Job",
-      "Berlin-Nord-VLC-Policy", "Berlin-Nord-VLC-Job", "Berlin-Nord-Notepad-Policy", "Berlin-Nord-Notepad-Job"
+      "RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-Office-Job", "RBSSt02-Nord-PDFCreator-Policy", "RBSSt02-Nord-PDFCreator-Job",
+      "RBSSt02-Nord-7Zip-Policy", "RBSSt02-Nord-7Zip-Job", "RBSSt02-Nord-GoogleChrome-Policy", "RBSSt02-Nord-GoogleChrome-Job",
+      "RBSSt02-Nord-Firefox-Policy", "RBSSt02-Nord-Firefox-Job", "RBSSt02-Nord-AdobeReader-Policy", "RBSSt02-Nord-AdobeReader-Job",
+      "RBSSt02-Nord-MSTeams-Policy", "RBSSt02-Nord-MSTeams-Job", "RBSSt02-Nord-Zoom-Policy", "RBSSt02-Nord-Zoom-Job",
+      "RBSSt02-Nord-VLC-Policy", "RBSSt02-Nord-VLC-Job", "RBSSt02-Nord-Notepad-Policy", "RBSSt02-Nord-Notepad-Job"
     ]
   },
   {
     "computer": "PC-2001$",
-    "groups": ["Berlin-Sued-Office-Policy", "Berlin-Sued-Firefox-Policy", "Berlin-Nord-DoesNotExist-Policy"]
+    "groups": ["RBSSt02-Sued-Office-Policy", "RBSSt02-Sued-Firefox-Policy", "RBSSt02-Nord-DoesNotExist-Policy"]
   }
 ]

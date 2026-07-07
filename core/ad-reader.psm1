@@ -178,9 +178,9 @@ function _Oup-ReadMock {
 
     # Standort -> Unterstandorte
     $sites = [ordered]@{
-        'Berlin'   = @('Berlin-Nord', 'Berlin-Sued', 'Berlin-Mitte')
-        'Hamburg'  = @('Hamburg-HafenCity', 'Hamburg-Altona')
-        'Muenchen' = @('Muenchen-Zentrum', 'Muenchen-Ost', 'Muenchen-West')
+        'RBSSt02' = @('RBSSt02-Nord', 'RBSSt02-Sued', 'RBSSt02-Mitte')
+        'RBSSt03' = @('RBSSt03-Nord', 'RBSSt03-Sued')
+        'RBSSt04' = @('RBSSt04-Nord', 'RBSSt04-Sued', 'RBSSt04-Ost')
     }
 
     # Anwendungen — je Software gibt es pro Unterstandort ZWEI Gruppen:
@@ -211,7 +211,7 @@ function _Oup-ReadMock {
             for ($i = 0; $i -lt $swCount; $i++) {
                 $app = $apps[$i % $apps.Count]
                 foreach ($t in $types) {
-                    $gName = "$sub-$app-$t"           # z. B. Berlin-Nord-Office-Policy
+                    $gName = "$sub-$app-$t"           # z. B. RBSSt02-Nord-Office-Policy
                     $gDn   = "CN=$gName,$subDn"
                     $sid   = "S-1-5-21-1234567890-1234567890-1234567890-$rid"
                     $flat.Add( (New-OupTreeNode 'Group' $gName (_Oup-DnGuid $gDn) $sid $gDn (_Oup-ParentDn $gDn) 0) )

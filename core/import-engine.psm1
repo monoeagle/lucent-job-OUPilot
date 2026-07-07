@@ -184,7 +184,7 @@ function Read-OupAssignmentFile {
 # Zuweisung hat Software + Typ (Job|Policy). Der Admin wählt im Baum die SubOU;
 # Ziel ist <SubOU>-<Software>-<Typ> innerhalb DIESER SubOU.
 #
-#   [ { "computer":"PC-1001$", "standort":"Berlin-Nord",
+#   [ { "computer":"PC-1001$", "standort":"RBSSt02-Nord",
 #       "assignments":[ {"software":"Office","type":"Policy"},
 #                       {"software":"PDFCreator","type":"Job"} ] } ]
 # ─────────────────────────────────────────────────────────────────────────────

@@ -128,7 +128,7 @@ SubOU ein. Alle SubOUs haben denselben Software-Gruppensatz (je Software zwei
 Gruppen: `-Policy` und `-Job`).
 ```json
 [
-  { "computer": "PC-1001$", "standort": "Berlin-Nord",
+  { "computer": "PC-1001$", "standort": "RBSSt02-Nord",
     "assignments": [ {"software":"Office","type":"Policy"},
                      {"software":"7Zip","type":"Job"} ] }
 ]
@@ -137,7 +137,7 @@ Gruppen: `-Policy` und `-Job`).
   (bzw. deren Standort), wird der Rechner **übersprungen + dokumentiert**
   (`Logs\konflikte-*.csv`). Fehlt die Zielgruppe in der SubOU → Status
   `Gruppe fehlt`.
-- Beispiel: `samples\devices-berlin-nord.json`. Feldaliasse: Rechner über
+- Beispiel: `samples\devices-rbsst02-nord.json`. Feldaliasse: Rechner über
   `computer`/`rechner`/`name`/…, Standort über `standort`/`site`/`subou`/…,
   Zuweisungen über `assignments`/`zuweisungen`/…, je Zuweisung `software` + `type`.
 
@@ -153,7 +153,7 @@ Sonderfälle; der Hauptworkflow ist Weg 1.
 ```json
 [
   { "computer": "PC-1010$",
-    "groups": ["Berlin-Nord-Office-Policy", "Berlin-Nord-7Zip-Job"] }
+    "groups": ["RBSSt02-Nord-Office-Policy", "RBSSt02-Nord-7Zip-Job"] }
 ]
 ```
 Unbekannte Gruppennamen werden gesammelt gemeldet (nichts wird halb geschrieben).

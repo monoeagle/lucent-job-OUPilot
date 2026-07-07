@@ -1,7 +1,7 @@
 [
   {
     "computer": "PC-1001$",
-    "standort": "Berlin-Nord",
+    "standort": "RBSSt02-Nord",
     "assignments": [
       { "software": "Office", "type": "Policy" },
       { "software": "7Zip",   "type": "Job" }
@@ -9,7 +9,7 @@
   },
   {
     "computer": "PC-1002$",
-    "standort": "Berlin",
+    "standort": "RBSSt02",
     "assignments": [
       { "software": "Firefox", "type": "Policy" },
       { "software": "MSTeams", "type": "Policy" }
@@ -17,14 +17,14 @@
   },
   {
     "computer": "PC-WRONG$",
-    "standort": "Hamburg-Altona",
+    "standort": "RBSSt03-Sued",
     "assignments": [
       { "software": "Office", "type": "Policy" }
     ]
   },
   {
     "computer": "PC-1003$",
-    "standort": "Berlin-Nord",
+    "standort": "RBSSt02-Nord",
     "assignments": [
       { "software": "Photoshop", "type": "Policy" }
     ]

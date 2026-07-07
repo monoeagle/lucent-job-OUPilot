@@ -1260,7 +1260,7 @@ Run: `pwsh -NoProfile -File tools/test-dsm-import.ps1` — Expected: grün (Regr
   2. `.\run.ps1` (Mock-Modus greift ohne Domäne), im Baum `Standorte → RBSSt01` wählen → Knopf zeigt „DSM-Export in Standort 'RBSSt01' importieren...".
   3. Testlauf-Häkchen setzen, alle 6 `samples\RBSSt0*.txt` importieren → Grid zeigt 11 Einträge mit `adStatus=Simuliert`; `Logs\dsm-report-*.csv` enthält die Ablehnungs-/Filter-/Gruppe-fehlt-Zeilen.
   4. Ohne Testlauf wiederholen → Bestätigungsdialog nennt 9 Rechner / 11 Mitgliedschaften / 4 Gruppen, 2 abgelehnte Dateien, 1 fehlende Zielgruppe; Status `Simuliert` (Mock); Zähler an den 4 Gruppen steigen.
-  5. `Berlin → Berlin-Nord` wählen → weiterhin SubOU-Modus (Regression Geräte-Import); eine Gruppe wählen → weiterhin Gruppen-Modus.
+  5. `RBSSt02 → RBSSt02-Nord` wählen → weiterhin SubOU-Modus (Regression Geräte-Import); eine Gruppe wählen → weiterhin Gruppen-Modus.
 
 - [ ] **Step 10: Commit**
 

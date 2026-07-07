@@ -288,7 +288,7 @@ function _Oup-SetEntryField {
 }
 
 function _Oup-RdnValue {
-    <#  .SYNOPSIS  Wert der ersten RDN eines DN (z. B. "OU=Berlin,..." -> "Berlin").  #>
+    <#  .SYNOPSIS  Wert der ersten RDN eines DN (z. B. "OU=RBSSt02,..." -> "RBSSt02").  #>
     param([string]$Dn)
     if (-not $Dn) { return '' }
     return (($Dn -split ',')[0] -replace '^[^=]+=', '')
