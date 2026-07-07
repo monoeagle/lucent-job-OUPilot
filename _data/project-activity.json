@@ -1,0 +1,221 @@
+{
+  "generatedAt": "2026-07-07T06:15:14",
+  "range": {
+    "from": "2025-07-08",
+    "to": "2026-07-07"
+  },
+  "byDay": {
+    "2026-07-07": {
+      "commits": 1,
+      "kinds": {
+        "refactor": 1
+      },
+      "list": [
+        {
+          "sha": "1e2ca1d",
+          "subject": "refactor(mock): Mock-Standorte auf generisches RBSSt-Schema vereinheitlicht (statt Staedtenamen)",
+          "kind": "refactor"
+        }
+      ]
+    },
+    "2026-07-06": {
+      "commits": 26,
+      "kinds": {
+        "chore": 1,
+        "docs": 16,
+        "feat": 8,
+        "other": 1
+      },
+      "list": [
+        {
+          "sha": "8759034",
+          "subject": "chore(dsm): Review-Nacharbeiten - gitignore-Eintraege, Doku-Praezisierungen",
+          "kind": "chore"
+        },
+        {
+          "sha": "b32859a",
+          "subject": "docs: DSM-Export-Import dokumentieren (README, Changelog, Referenz, Architektur-Diagramm)",
+          "kind": "docs"
+        },
+        {
+          "sha": "6bf810c",
+          "subject": "feat(dsm): Standort-Modus in der UI - DSM-Import mit Plan, Bestaetigung und CSV-Report",
+          "kind": "feat"
+        },
+        {
+          "sha": "78a4461",
+          "subject": "docs(plan): Buckets auf ArrayList angleichen (pwsh-7.4.6-Regression bei generischer List)",
+          "kind": "docs"
+        },
+        {
+          "sha": "242cf4f",
+          "subject": "feat(dsm): New-OupDsmImportPlan - RBSSt-Gate, Gruppen-Lookup, Import-Plan",
+          "kind": "feat"
+        },
+        {
+          "sha": "b2c123f",
+          "subject": "feat(dsm): Mock-Standort RBSSt01 mit App-Sub-OUs nach realem AD-Muster",
+          "kind": "feat"
+        },
+        {
+          "sha": "c43a403",
+          "subject": "docs(plan): Pfadbau in Get-OupDsmMappingPath an Implementierung angleichen (Windows-Pfad, pwsh-Harness)",
+          "kind": "docs"
+        },
+        {
+          "sha": "a9f7f7e",
+          "subject": "feat(dsm): Filterregeln, Namensschema und dsm-mapping.json-Loader (Resolve-OupDsmAssignments)",
+          "kind": "feat"
+        },
+        {
+          "sha": "c77a187",
+          "subject": "feat(dsm): Read-OupDsmGroupFile - Parser mit SchemaVersion-/Validation-Gate + Test-Harness",
+          "kind": "feat"
+        },
+        {
+          "sha": "714b183",
+          "subject": "feat(dsm): Beispiel-Exportdateien + Mapping-Vorlage (Spec-Faelle 1-5, fremder RBSSt)",
+          "kind": "feat"
+        },
+        {
+          "sha": "97b80ce",
+          "subject": "docs(plan): Implementierungsplan DSM-Export-Import (7 Tasks, TDD via pwsh-Harness)",
+          "kind": "docs"
+        },
+        {
+          "sha": "83cd9eb",
+          "subject": "docs(spec): Design DSM-Export-Import (Ivanti-DSM-Gruppendateien)",
+          "kind": "docs"
+        },
+        {
+          "sha": "50c56ba",
+          "subject": "Create int_jsonStructure.md",
+          "kind": "other"
+        },
+        {
+          "sha": "0c0acb2",
+          "subject": "docs(handoff): Autor-Attribution neutral formulieren",
+          "kind": "docs"
+        },
+        {
+          "sha": "ab8eb94",
+          "subject": "docs(handoff): Session 2 — Doku-Site auf zensical/gh-pages, Claude-Bezuege entfernt",
+          "kind": "docs"
+        },
+        {
+          "sha": "45c22e9",
+          "subject": "docs(home): Startseite garantiert scrollfrei (clamp-Untergrenze gesenkt)",
+          "kind": "docs"
+        },
+        {
+          "sha": "df4b328",
+          "subject": "docs(readme): Live-Doku (GitHub Pages) verlinken",
+          "kind": "docs"
+        },
+        {
+          "sha": "46d9cfc",
+          "subject": "docs(diagram): AP-Uebersicht als flowchart TB mit Subgraphen (wie luDBxP)",
+          "kind": "docs"
+        },
+        {
+          "sha": "2522c18",
+          "subject": "docs: Doku-Site auf zensical/Material umgestellt (identisch zu Lucent-Projekten)",
+          "kind": "docs"
+        },
+        {
+          "sha": "ffe9a20",
+          "subject": "feat(docs): lokale Doku-Site-Generator (PowerShell, No-CDN, offline)",
+          "kind": "feat"
+        },
+        {
+          "sha": "6a46c53",
+          "subject": "docs(handoff): Session 1 — Repo-Init, Theme/Filter/Entfernen/Feld-Map, Release v1.4.0",
+          "kind": "docs"
+        },
+        {
+          "sha": "4c18f07",
+          "subject": "docs(readme): Release-Links (v1.4.0 / latest) + Download-Hinweis",
+          "kind": "docs"
+        },
+        {
+          "sha": "67a4c51",
+          "subject": "docs(changelog): Testclient-Checkliste unter 1.4.0 einordnen (Release-Vorbereitung)",
+          "kind": "docs"
+        },
+        {
+          "sha": "36ecd72",
+          "subject": "docs(changelog): Verweis auf Testclient-Checkliste (Unreleased)",
+          "kind": "docs"
+        },
+        {
+          "sha": "f9f6e00",
+          "subject": "docs: Testclient-Checkliste fuer den echten AD-Gegentest",
+          "kind": "docs"
+        },
+        {
+          "sha": "ad1cef0",
+          "subject": "feat(import): konfigurierbare Feld-Map fuer exotische Export-Formate",
+          "kind": "feat"
+        }
+      ]
+    },
+    "2026-07-05": {
+      "commits": 4,
+      "kinds": {
+        "feat": 3,
+        "other": 1
+      },
+      "list": [
+        {
+          "sha": "23dc5f5",
+          "subject": "feat(members): Mitglieder aus Gruppe entfernen (AD + Store)",
+          "kind": "feat"
+        },
+        {
+          "sha": "a0fb18d",
+          "subject": "feat(ui): Baum-Filter (Live-Suche nach OU-/Gruppennamen)",
+          "kind": "feat"
+        },
+        {
+          "sha": "d141f1d",
+          "subject": "feat(ui): Theme-System (12 Paletten + 2 Stile, live umschaltbar)",
+          "kind": "feat"
+        },
+        {
+          "sha": "f6bdaa5",
+          "subject": "Initial commit: OUPilot — AD-Gruppen-Zuweisung fuer MECM-Deployment",
+          "kind": "other"
+        }
+      ]
+    }
+  },
+  "stats": {
+    "totalCommits": 31,
+    "activeDays": 3,
+    "longestStreak": 3,
+    "topKinds": [
+      {
+        "kind": "docs",
+        "count": 16
+      },
+      {
+        "kind": "feat",
+        "count": 11
+      },
+      {
+        "kind": "other",
+        "count": 2
+      },
+      {
+        "kind": "refactor",
+        "count": 1
+      },
+      {
+        "kind": "chore",
+        "count": 1
+      }
+    ],
+    "testCount": 0
+  },
+  "phases": []
+}
