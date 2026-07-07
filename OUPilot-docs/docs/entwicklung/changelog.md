@@ -1,11 +1,30 @@
 # Changelog — OUPilot
 
 ## Unreleased
-- Lokale Doku-Site: `run-docs.ps1` baut aus README/CHANGELOG/Testclient-Checkliste
-  eine statische HTML-Website (`docs-site\`) und öffnet sie; `-Serve` startet einen
-  lokalen Server. Abhängigkeitsfrei (reines PowerShell, kein Python/Node, No-CDN),
-  mit Seiten-Navigation und Hell/Dunkel-Umschaltung. Generat (`docs-site\site\`)
-  ist gitignored.
+- DSM-Export-Import (Standort-Ebene): eine JSON-Datei je DSM-Gruppe
+  (`<RBSSt>_<Gruppe>.txt` nach `int_jsonStructure.md`, SchemaVersion 1.0) wird
+  in AD-Mitgliedschaften `<RBSSt>-<App>-<Endung>` übersetzt (Endungen `Policy`,
+  `Job`, `Policy-Available`, `Job-Available` aus PolicySchemaTag × AssignmentMode).
+  Namensbrücke über `dsm-mapping.json` (DSM-Paketname → AD-App-Name, Settings-Key
+  `DsmMappingPath`, Vorlage `samples\dsm-mapping.example.json`). Deny-Policies,
+  deaktivierte/abgelaufene/noch-nicht-aktive Policies, Nicht-Computer-Mitglieder,
+  fehlende Mappings/Zielgruppen und abgelehnte Dateien (Validation-Gate, fremder
+  RBSSt) landen im CSV-Report `Logs\dsm-report-*.csv`. Dynamische Gruppen werden
+  über den exportierten Snapshot einsortiert.
+- core: neues Modul `dsm-import.psm1` (`Read-OupDsmGroupFile`,
+  `Resolve-OupDsmAssignments`, `New-OupDsmImportPlan`, Mapping-Loader); UI:
+  dritter Import-Modus `Standort` (OU ohne direkte Gruppen, mit Gruppen in
+  Sub-OUs); Mock um Standort `RBSSt01` nach realem AD-Muster erweitert;
+  Test-Harness `tools\test-dsm-import.ps1`.
+- Mock-Standorte auf generisches **RBSSt-Schema** vereinheitlicht (RBSSt02–04
+  mit Unterstandorten statt Städtenamen) — inkl. gekoppelter Samples
+  (`devices-rbsst02-nord.json` u. a.) und Doku-Beispiele.
+- Doku-Site auf **zensical/Material** (`OUPilot-docs\`) — Layout identisch zu den
+  anderen Lucent-Projekten: Icon-Rail-Navigation, Aktivitäts-Heatmap + Insights aus
+  der Git-Historie, gerenderte Diagramme (AP-Übersicht, Architektur, Roadmap als
+  SVG). Start via `run-docs.ps1` bzw. `run_OUPilot_docs.sh` (eigenes `.venv-docs`,
+  `font=false` = CDN-frei). Als **gh-pages** veröffentlicht. Ersetzt den früheren
+  PowerShell-Generator.
 
 ## 1.4.0
 - Konfigurierbare Feld-Map: optionale `fieldmap.json` (App-Root, Pfad via

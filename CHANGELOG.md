@@ -16,6 +16,9 @@
   dritter Import-Modus `Standort` (OU ohne direkte Gruppen, mit Gruppen in
   Sub-OUs); Mock um Standort `RBSSt01` nach realem AD-Muster erweitert;
   Test-Harness `tools\test-dsm-import.ps1`.
+- Mock-Standorte auf generisches **RBSSt-Schema** vereinheitlicht (RBSSt02–04
+  mit Unterstandorten statt Städtenamen) — inkl. gekoppelter Samples
+  (`devices-rbsst02-nord.json` u. a.) und Doku-Beispiele.
 - Doku-Site auf **zensical/Material** (`OUPilot-docs\`) — Layout identisch zu den
   anderen Lucent-Projekten: Icon-Rail-Navigation, Aktivitäts-Heatmap + Insights aus
   der Git-Historie, gerenderte Diagramme (AP-Übersicht, Architektur, Roadmap als

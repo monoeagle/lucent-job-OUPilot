@@ -21,10 +21,12 @@ flowchart TB
 
   subgraph AP3["AP-3 · Import-Engine"]
     direction TB
-    A3a["3 Import-Wege"]:::done
+    A3a["Import-Wege Einzel/Sammel/Geräte"]:::done
     A3b["Standort-Konflikt-Skip"]:::done
     A3c["Feld-Map"]:::done
+    A3d["DSM-Export-Import (Standort-Modus)"]:::done
     A3a --> A3b
+    A3c --> A3d
   end
 
   subgraph AP4["AP-4 · Persistenz"]
@@ -44,7 +46,9 @@ flowchart TB
     A6a["Mock-Verifikation"]:::done
     A6b["UTF-8-BOM-Workflow"]:::done
     A6c["Doku-Site (zensical)"]:::done
-    A6d["Domänen-Testclient-Gegentest"]:::plan
+    A6e["DSM-Test-Harness (61 Assertions)"]:::done
+    A6d["DSM-Durchstich Windows (Mock)"]:::plan
+    A6f["Domänen-Testclient-Gegentest"]:::plan
   end
 
   AP1 --> AP3

@@ -118,6 +118,21 @@ echt schreiben. Nur an **Test-OUs / Test-Gruppen / Test-Rechnern** arbeiten.
 - [ ] Zeigt alle Gruppen (Standort/Unterstandort/AD-Status/Quelle); bei mehreren
       Standorten erscheint die **Warnung**.
 
+## 9b. DSM-Export-Import (Standort-Ebene)
+
+- [ ] `samples\dsm-mapping.example.json` nach `dsm-mapping.json` (App-Root)
+      kopieren; Test-Standort-OU mit Gruppen nach `<RBSSt>-<App>-<Endung>`
+      vorhanden (RBSSt = OU-Name).
+- [ ] **Standort-OU** (ohne direkte Gruppen) wählen → Knopf wechselt auf
+      „DSM-Export in Standort '…' importieren…".
+- [ ] Erst **Testlauf** mit den `samples\RBSSt0*.txt`-Dateien: Bestätigungs-/
+      Ergebniszahlen prüfen (9 Rechner, 11 Mitgliedschaften, 4 Gruppen,
+      2 abgelehnte Dateien, `RBSSt01-VLC-Policy` fehlt), dann echt.
+- [ ] `Logs\dsm-report-*.csv` prüfen: abgelehnte Dateien (Validation/fremder
+      RBSSt), Deny-/deaktivierte/abgelaufene Policies, fehlende Mappings/
+      Zielgruppen, Nicht-Computer-Mitglieder.
+- [ ] Ohne `dsm-mapping.json` bricht der Import mit klarer Meldung ab.
+
 ## 10. Logs & Aufräumen
 
 - [ ] `Logs\oupilot.log` durchsehen: genutzter **Lese-/Schreibpfad** (Module/Adsi),
@@ -154,5 +169,6 @@ echt schreiben. Nur an **Test-OUs / Test-Gruppen / Test-Rechnern** arbeiten.
 | SubOU-Geräte-Import             |    |           |
 | Sammelliste + Standort-Konflikt |    |           |
 | Rechner-Übersicht               |    |           |
+| DSM-Export-Import (Standort)    |    |           |
 
 Getestet von: _______________  Datum: __________  App-Version: 1.4.0
